@@ -9,4 +9,15 @@
 
     <!-- add our i18n resource -->
     <resource type="i18n" name="i18n" location="bamboo-slack-notifications"/>
+
+    <notificationRecipient key="recipient.slack.channel" name="Slack Channel"
+                           class="tools.redfox.bamboo.notifications.slack.recipient.SlackRecipient" weight="10">
+        <description>Slack channel</description>
+        <resource type="freemarker" name="edit" location="templates/channelEdit.ftl"/>
+    </notificationRecipient>
+
+<!--    <notificationType key="chainCompleted.allBuilds" name="All Builds Completed" class="tools.redfox.bamboo.notifications.slack.types.BuildFinishedNotificationType" weight="10">-->
+<!--        <description>Notification sent for every fully completed build</description>-->
+<!--        <scope>chain</scope>-->
+<!--    </notificationType>-->
 </atlassian-plugin>
