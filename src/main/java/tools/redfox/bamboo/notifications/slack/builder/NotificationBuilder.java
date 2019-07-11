@@ -25,7 +25,6 @@ public class NotificationBuilder {
                         true
                 )
         );
-//        notification.getContext();
         return getBuilder(notification).build();
     }
 

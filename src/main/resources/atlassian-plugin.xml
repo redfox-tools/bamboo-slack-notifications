@@ -16,6 +16,35 @@
         <resource type="freemarker" name="edit" location="templates/channelEdit.ftl"/>
     </notificationRecipient>
 
+    <bambooEventListener key="slackDeploymentEventListener" class="tools.redfox.bamboo.notifications.slack.listener.DeploymentListener"/>
+
+    <preChainAction key="slackPreBuildAction" class="tools.redfox.bamboo.notifications.slack.listener.PreBuildAction" />
+    <postChainAction key="slackPostBuildAction" class="tools.redfox.bamboo.notifications.slack.listener.PostBuildAction" />
+    <postJobAction key="slackPostJobAction" class="tools.redfox.bamboo.notifications.slack.listener.PostJobAction" />
+
+    <web-item key="slackLink" name="Slack admin" section="system.admin/plugins" weight="999">
+        <label key="tools.redfox.bamboo.notifications.slack.configuration.menu">Slack integration</label>
+        <link linkId="slack-settings-link">/admin/slack/settings.action</link>
+    </web-item>
+
+    <xwork key="sentrySettings" name="Configure slack integration" >
+        <package extends="admin" name="settings" namespace="/admin/slack">
+            <action class="tools.redfox.bamboo.notifications.slack.action.SlackConfigurationAction" name="settings">
+                <interceptor-ref name="defaultStack"/>
+                <result name="input" type="freemarker">/templates/settings.ftl</result>
+                <result name="success" type="freemarker">/templates/settings.ftl</result>
+                <result name="reload" type="redirect">/admin/sentry/settings.action?saved=true</result>
+            </action>
+
+            <action class="tools.redfox.bamboo.notifications.slack.action.AuthorizeAction" name="authorize">
+                <interceptor-ref name="defaultStack"/>
+                <result name="input" type="freemarker">/templates/settings.ftl</result>
+                <result name="success" type="freemarker">/templates/settings.ftl</result>
+                <result name="reload" type="redirect">/admin/sentry/settings.action?saved=true</result>
+            </action>
+        </package>
+    </xwork>
+
 <!--    <notificationType key="chainCompleted.allBuilds" name="All Builds Completed" class="tools.redfox.bamboo.notifications.slack.types.BuildFinishedNotificationType" weight="10">-->
 <!--        <description>Notification sent for every fully completed build</description>-->
 <!--        <scope>chain</scope>-->
