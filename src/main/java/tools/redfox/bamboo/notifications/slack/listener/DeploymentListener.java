@@ -24,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import tools.redfox.bamboo.notifications.slack.slack.SlackService;
+import tools.redfox.bamboo.notifications.slack.utils.BlockUtils;
+import tools.redfox.bamboo.notifications.slack.utils.EntityUtils;
 
 import java.text.MessageFormat;
 import java.util.LinkedList;
@@ -36,6 +38,8 @@ public class DeploymentListener {
     private ResultsSummaryManager resultsSummaryManager;
     private JiraIssueResultsManager jiraIssueResultsManager;
     private SlackService slack;
+    private BlockUtils blockUtils;
+    private EntityUtils entityUtils;
     private final DeploymentResultService deploymentResultService;
 
     private static Logger logger = LoggerFactory.getLogger(DeploymentListener.class);
@@ -47,7 +51,9 @@ public class DeploymentListener {
             @ComponentImport DeploymentVersionService deploymentVersionService,
             @ComponentImport ResultsSummaryManager resultsSummaryManager,
             @ComponentImport JiraIssueResultsManager jiraIssueResultsManager,
-            SlackService slack
+            SlackService slack,
+            BlockUtils blockUtils,
+            EntityUtils entityUtils
     ) {
         this.deploymentResultService = deploymentResultService;
         this.environmentService = environmentService;
@@ -55,6 +61,8 @@ public class DeploymentListener {
         this.resultsSummaryManager = resultsSummaryManager;
         this.jiraIssueResultsManager = jiraIssueResultsManager;
         this.slack = slack;
+        this.blockUtils = blockUtils;
+        this.entityUtils = entityUtils;
     }
 
     @EventListener
@@ -68,25 +76,16 @@ public class DeploymentListener {
     }
 
     private void handleDeployementEvent(DeploymentEvent event) {
-        @Nullable DeploymentResult result = deploymentResultService.getDeploymentResult(event.getDeploymentResultId());
-        @Nullable DeploymentVersion version = result.getDeploymentVersion();
+        @Nullable DeploymentResult deploymentResult = deploymentResultService.getDeploymentResult(event.getDeploymentResultId());
+        @Nullable DeploymentVersion version = deploymentResult.getDeploymentVersion();
         PlanResultKey planKey = deploymentVersionService.getRelatedPlanResultKeys(version.getId()).stream().findFirst().get();
         @Nullable ResultsSummary buildResult = resultsSummaryManager.getResultsSummary(planKey);
-        NotificationSet notifications = environmentService.getNotificationSet(result.getEnvironment().getId());
+        NotificationSet notifications = environmentService.getNotificationSet(deploymentResult.getEnvironment().getId());
 
         try {
             List<LayoutBlock> blocks = new LinkedList<>();
-            blocks.add(
-                    SectionBlock.builder().text(MarkdownTextObject.builder().text(getHeadline(result, buildResult, event)).build()).build()
-            );
-            blocks.add(
-                    ContextBlock
-                            .builder()
-                            .elements(new LinkedList<ContextBlockElement>() {{
-                                add(MarkdownTextObject.builder().text(getAuthor(result, event)).build());
-                            }})
-                            .build()
-            );
+            blocks.add(blockUtils.header(getHeadline(deploymentResult, buildResult, event)));
+            blocks.add(blockUtils.context(entityUtils.triggerReason(deploymentResult.getTriggerReason())));
             blocks.add(new DividerBlock());
 
             List<LinkedJiraIssue> issues = jiraIssueResultsManager.findJiraIssuesForBuildResults(new LinkedList<ResultsSummary>() {{
