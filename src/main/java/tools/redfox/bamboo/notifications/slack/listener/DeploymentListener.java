@@ -195,7 +195,7 @@ public class DeploymentListener {
         }
         return MessageFormat.format(
                 headline,
-                urlProvider.projectPage(buildResult.getImmutablePlan().getProject().getName()),
+                urlProvider.projectPage(buildResult.getImmutablePlan().getProject().getKey()),
                 buildResult.getImmutablePlan().getProject().getName(),
                 urlProvider.version(result.getDeploymentVersion().getId()),
                 result.getDeploymentVersionName()
