@@ -108,9 +108,11 @@ public class DeploymentListener {
         blocks.add(blockUtils.context(entityUtils.triggerReason(deploymentResult.getTriggerReason())));
         blocks.add(new DividerBlock());
 
+        String masterEnvironmentId = getParentEnvironmentId(deploymentResult.getEnvironment());
+
         blocks.addAll(
                 new LinkedList<ContextBlock>() {{
-                    for (Environment environment : deploymentProject.getEnvironments().stream().filter(e -> filterEnvironment(e, deploymentResult.getEnvironment())).collect(Collectors.toList())) {
+                    for (Environment environment : deploymentProject.getEnvironments().stream().filter(e -> filterEnvironment(e, masterEnvironmentId)).collect(Collectors.toList())) {
                         add(blockUtils.context(EmojiResolver.emoji(deploymentResults.getOrDefault(environment.getId(), null)) + " " + environment.getName()));
                     }
                 }}
@@ -153,12 +155,9 @@ public class DeploymentListener {
 //        }
     }
 
-    private boolean filterEnvironment(Environment environment, Environment deployedEnvironment) {
-        if (deployedEnvironment.getId() == environment.getId()) {
-            return true;
-        }
-
-        return getParentEnvironmentId(environment).equals(String.valueOf(deployedEnvironment.getId())) || getParentEnvironmentId(deployedEnvironment).equals(String.valueOf(environment.getId()));
+    private boolean filterEnvironment(Environment environment, String masterEnvironmentId) {
+        return masterEnvironmentId.equals(String.valueOf(environment.getId()))
+                || masterEnvironmentId.equals(getParentEnvironmentId(environment));
     }
 
     private String getParentEnvironmentId(Environment environment) {
@@ -169,7 +168,7 @@ public class DeploymentListener {
                 .map(t -> t.getConfiguration().getOrDefault("deployment.trigger.afterSuccessfulDeployment.triggeringEnvironmentId", "-1"))
                 .filter(t -> !t.equals("-1"))
                 .findFirst()
-                .orElse("-1");
+                .orElse(String.valueOf(environment.getId()));
     }
 
     private String getHeadline(DeploymentResult result, ResultsSummary buildResult, DeploymentEvent event) {
