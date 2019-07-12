@@ -28,14 +28,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import tools.redfox.bamboo.notifications.slack.persistence.model.SlackNotification;
 import tools.redfox.bamboo.notifications.slack.slack.SlackService;
 import tools.redfox.bamboo.notifications.slack.utils.BlockUtils;
+import tools.redfox.bamboo.notifications.slack.utils.EmojiResolver;
 import tools.redfox.bamboo.notifications.slack.utils.EntityUtils;
 import tools.redfox.bamboo.notifications.slack.utils.UrlProvider;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DeploymentListener {
@@ -94,11 +93,15 @@ public class DeploymentListener {
     private void handleDeployementEvent(DeploymentEvent event) {
         DeploymentResult deploymentResult = deploymentResultService.getDeploymentResult(event.getDeploymentResultId());
         DeploymentVersion version = deploymentResult.getDeploymentVersion();
-        List<DeploymentResult> deploymentResults = deploymentResultService.getDeploymentResultsForDeploymentVersion(version.getId());
         ResultsSummary buildResult = resultsSummaryManager.getResultsSummary(
                 Objects.requireNonNull(deploymentVersionService.getRelatedPlanResultKeys(version.getId()).stream().findFirst().orElse(null))
         );
         DeploymentProject deploymentProject = deploymentProjectService.getDeploymentProjectForVersion(version.getId());
+        Map<Long, DeploymentResult> deploymentResults = new HashMap<Long, DeploymentResult>() {{
+            for (DeploymentResult result : deploymentResultService.getDeploymentResultsForDeploymentVersion(version.getId())) {
+                put(result.getEnvironment().getId(), result);
+            }
+        }};
 
         List<LayoutBlock> blocks = new LinkedList<>();
         blocks.add(blockUtils.header(getHeadline(deploymentResult, buildResult, event)));
@@ -108,7 +111,7 @@ public class DeploymentListener {
         blocks.addAll(
                 new LinkedList<ContextBlock>() {{
                     for (Environment environment : deploymentProject.getEnvironments().stream().filter(e -> filterEnvironment(e, deploymentResult.getEnvironment())).collect(Collectors.toList())) {
-                        add(blockUtils.context(environment.getName()));
+                        add(blockUtils.context(EmojiResolver.emoji(deploymentResults.getOrDefault(environment.getId(), null)) + " " + environment.getName()));
                     }
                 }}
         );
