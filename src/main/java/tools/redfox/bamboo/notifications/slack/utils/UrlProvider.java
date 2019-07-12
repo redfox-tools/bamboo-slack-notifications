@@ -54,4 +54,12 @@ public class UrlProvider {
     public Object version(long id) {
         return bambooUrl.getBaseUrl(UrlMode.ABSOLUTE) + "/deploy/viewDeploymentVersion.action?versionId=" + id;
     }
+
+    public String environment(long environmentId) {
+        return bambooUrl.getBaseUrl(UrlMode.ABSOLUTE) + "/deploy/viewEnvironment.action?id=" + environmentId;
+    }
+
+    public String deployment(long deploymentId) {
+        return bambooUrl.getBaseUrl(UrlMode.ABSOLUTE) + "/deploy/viewDeploymentResult.action?deploymentResultId=" + deploymentId;
+    }
 }

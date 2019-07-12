@@ -7,6 +7,8 @@ import com.github.seratch.jslack.api.model.block.ContextBlockElement;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
 import com.github.seratch.jslack.api.model.block.SectionBlock;
 import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
+import com.github.seratch.jslack.api.model.block.composition.TextObject;
+import com.github.seratch.jslack.api.model.block.element.BlockElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.MessageFormat;
@@ -61,6 +63,14 @@ public class BlockUtils {
             add(header(header));
             add(context(elements));
         }};
+    }
+
+    public SectionBlock section(TextObject text, BlockElement accessory) {
+        return SectionBlock
+                .builder()
+                .text(text)
+                .accessory(accessory)
+                .build();
     }
 
     public List<LayoutBlock> section(String header, List<ContextBlockElement> elements, MarkdownTextObject footer) {

@@ -1,6 +1,8 @@
 package tools.redfox.bamboo.notifications.slack.utils;
 
 import com.atlassian.bamboo.commit.CommitContext;
+import com.atlassian.bamboo.deployments.environments.Environment;
+import com.atlassian.bamboo.deployments.results.DeploymentResult;
 import com.atlassian.bamboo.resultsummary.BuildResultsSummary;
 import com.atlassian.bamboo.v2.build.trigger.ManualBuildTriggerReason;
 import com.atlassian.bamboo.v2.build.trigger.TriggerReason;
@@ -24,7 +26,7 @@ public class EntityUtils {
     public String triggerReason(TriggerReason reason) {
         StringBuilder author = new StringBuilder();
         author.append(String.format(
-                ":male-technologist: *%s at <!date^%s^{date_long_pretty} {time}|%s>*",
+                ":male-technologist: *%s at <!date^%s^{date_long} {time}|%s>*",
                 reason.getName(),
                 new Date().getTime() / 1000,
                 new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date())
@@ -63,6 +65,21 @@ public class EntityUtils {
                 commitContext.getChangeSetId().substring(0, 8),
                 commitContext.getComment(),
                 commitContext.getAuthorContext().getName()
+        );
+    }
+
+    public String environment(Environment environment) {
+        return MessageFormat.format(
+                "<{0}|{1}>",
+                urlProvider.environment(environment.getId()),
+                environment.getName()
+        );
+    }
+
+    public String deployment(DeploymentResult result) {
+        return MessageFormat.format(
+                "<{0}|results>",
+                urlProvider.deployment(result.getId())
         );
     }
 }

@@ -103,17 +103,32 @@ public class DeploymentListener {
             }
         }};
 
+        String masterEnvironmentId = getParentEnvironmentId(deploymentResult.getEnvironment());
+        DeploymentResult masterDeployment = null;
+        if (Long.valueOf(masterEnvironmentId) != deploymentResult.getEnvironment().getId()) {
+            masterDeployment = deploymentResultService.getDeploymentResultsForDeploymentVersionAndEnvironment(version.getId(), Long.valueOf(masterEnvironmentId)).stream().findFirst().orElse(null);
+        }
+        if (masterDeployment == null) {
+            masterDeployment = deploymentResult;
+        }
+
         List<LayoutBlock> blocks = new LinkedList<>();
         blocks.add(blockUtils.header(getHeadline(deploymentResult, buildResult, event)));
-        blocks.add(blockUtils.context(entityUtils.triggerReason(deploymentResult.getTriggerReason())));
+        blocks.add(blockUtils.context(entityUtils.triggerReason(masterDeployment.getTriggerReason())));
         blocks.add(new DividerBlock());
-
-        String masterEnvironmentId = getParentEnvironmentId(deploymentResult.getEnvironment());
 
         blocks.addAll(
                 new LinkedList<ContextBlock>() {{
                     for (Environment environment : deploymentProject.getEnvironments().stream().filter(e -> filterEnvironment(e, masterEnvironmentId)).collect(Collectors.toList())) {
-                        add(blockUtils.context(EmojiResolver.emoji(deploymentResults.getOrDefault(environment.getId(), null)) + " " + environment.getName()));
+                        DeploymentResult result = deploymentResults.getOrDefault(environment.getId(), null);
+                        add(blockUtils.context(
+                                MessageFormat.format(
+                                        "{0} *{1}* ({2})",
+                                        EmojiResolver.emoji(result),
+                                        entityUtils.environment(environment),
+                                        entityUtils.deployment(result)
+                                )
+                        ));
                     }
                 }}
         );
