@@ -50,4 +50,8 @@ public class UrlProvider {
     private String baseJiraUrl() {
         return applicationLinkService.getPrimaryApplicationLink(JiraApplicationType.class).getDisplayUrl().toString();
     }
+
+    public Object version(long id) {
+        return bambooUrl.getBaseUrl(UrlMode.ABSOLUTE) + "/deploy/viewDeploymentVersion.action?versionId=" + id;
+    }
 }

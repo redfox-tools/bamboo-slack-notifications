@@ -1,7 +1,7 @@
 package tools.redfox.bamboo.notifications.slack.services;
 
-import com.atlassian.bamboo.chains.ChainResultsSummary;
 import com.atlassian.bamboo.jira.jiraissues.LinkedJiraIssue;
+import com.atlassian.bamboo.resultsummary.ImmutableResultsSummary;
 import com.atlassian.plugin.spring.scanner.annotation.component.BambooComponent;
 import com.github.seratch.jslack.api.model.block.DividerBlock;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
@@ -21,7 +21,7 @@ public class JiraIssueDetailsProvider {
         this.blockUtils = blockUtils;
     }
 
-    protected Set<LinkedJiraIssue> getJiraIssues(ChainResultsSummary resultsSummary) {
+    protected Set<LinkedJiraIssue> getJiraIssues(ImmutableResultsSummary resultsSummary) {
         Set<LinkedJiraIssue> issues;
         if (resultsSummary == null || (issues = resultsSummary.getJiraIssues()).size() == 0) {
             return null;
@@ -30,7 +30,7 @@ public class JiraIssueDetailsProvider {
         return issues;
     }
 
-    public void attach(List<LayoutBlock> blocks, ChainResultsSummary resultsSummary) {
+    public void attach(List<LayoutBlock> blocks, ImmutableResultsSummary resultsSummary) {
         Set<LinkedJiraIssue> issues = getJiraIssues(resultsSummary);
         if (issues == null) {
             return;

@@ -45,6 +45,11 @@
         </package>
     </xwork>
 
+    <ao key="ao-module">
+        <description>The ActiveObject entities for this plugin.</description>
+        <entity>tools.redfox.bamboo.notifications.slack.persistence.model.SlackNotification</entity>
+    </ao>
+
 <!--    <notificationType key="chainCompleted.allBuilds" name="All Builds Completed" class="tools.redfox.bamboo.notifications.slack.types.BuildFinishedNotificationType" weight="10">-->
 <!--        <description>Notification sent for every fully completed build</description>-->
 <!--        <scope>chain</scope>-->

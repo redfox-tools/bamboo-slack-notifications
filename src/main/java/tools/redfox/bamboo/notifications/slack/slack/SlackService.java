@@ -1,10 +1,10 @@
 package tools.redfox.bamboo.notifications.slack.slack;
 
-import com.atlassian.bamboo.variable.VariableDefinitionContext;
 import com.atlassian.plugin.spring.scanner.annotation.component.BambooComponent;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.RequestConfigurator;
 import com.github.seratch.jslack.api.methods.SlackApiException;
+import com.github.seratch.jslack.api.methods.SlackApiResponse;
 import com.github.seratch.jslack.api.methods.request.chat.ChatPostMessageRequest;
 import com.github.seratch.jslack.api.methods.request.chat.ChatUpdateRequest;
 import com.github.seratch.jslack.api.methods.response.channels.ChannelsListResponse;
@@ -12,6 +12,7 @@ import com.github.seratch.jslack.api.methods.response.chat.ChatPostMessageRespon
 import com.github.seratch.jslack.api.methods.response.chat.ChatUpdateResponse;
 import com.github.seratch.jslack.api.model.Channel;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
+import tools.redfox.bamboo.notifications.slack.persistence.model.SlackNotification;
 
 import java.io.IOException;
 import java.util.List;
@@ -67,8 +68,8 @@ public class SlackService {
         );
     }
 
-    public String send(String channel, List<LayoutBlock> blocks, VariableDefinitionContext messageTs) throws IOException, SlackApiException {
-        if (messageTs == null) {
+    public String send(String channel, List<LayoutBlock> blocks, String notification) throws IOException, SlackApiException {
+        if (notification == null) {
             return send(
                     req -> req
                             .channel(getChannelId(channel))
@@ -81,7 +82,7 @@ public class SlackService {
                             .channel(getChannelId(channel))
                             .blocks(blocks)
                             .text(blocks.get(0).toString()),
-                    messageTs.getValue()
+                    notification
             ).getTs();
         }
     }

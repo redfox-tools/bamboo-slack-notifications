@@ -1,12 +1,13 @@
 package tools.redfox.bamboo.notifications.slack.listener;
 
+import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.bamboo.chains.ChainResultsSummary;
 import com.atlassian.bamboo.chains.ChainStageResult;
-import com.atlassian.bamboo.plan.PlanManager;
 import com.atlassian.bamboo.resultsummary.BuildResultsSummary;
 import com.atlassian.bamboo.resultsummary.ResultsSummaryManager;
 import com.atlassian.bamboo.v2.build.BuildContext;
 import com.atlassian.bamboo.variable.VariableContext;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.model.block.DividerBlock;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
@@ -32,6 +33,7 @@ abstract public class AbstractActionListener {
     private BlockUtils blockUtils;
     private JiraIssueDetailsProvider jiraIssueDetailsProvider;
     private CommitDetailsProvider commitDetailsProvider;
+    private ActiveObjects ao;
 
     public enum Notification {
         STARTED,
@@ -40,26 +42,28 @@ abstract public class AbstractActionListener {
     }
 
     public void sendNotification(BuildContext buildContext, ChainResultsSummary resultsSummary, Notification notification) {
-        try {
-            List<LayoutBlock> blocks = new LinkedList<>();
+        List<LayoutBlock> blocks = new LinkedList<>();
 
-            blocks.add(blockUtils.header(getHeadline(buildContext, notification)));
-            blocks.add(blockUtils.context(getAuthor(buildContext)));
-            blocks.add(new DividerBlock());
+        blocks.add(blockUtils.header(getHeadline(buildContext, notification)));
+        blocks.add(blockUtils.context(getAuthor(buildContext)));
+        blocks.add(new DividerBlock());
 
-            for (ChainStageResult result : ((ChainResultsSummary) resultsSummaryManager.getResultsSummary(buildContext.getPlanResultKey())).getStageResults()) {
-                for (BuildResultsSummary jobResult : result.getBuildResults()) {
-                    blocks.add(blockUtils.context(getJobSummary(result, jobResult)));
-                }
+        for (ChainStageResult result : ((ChainResultsSummary) resultsSummaryManager.getResultsSummary(buildContext.getPlanResultKey())).getStageResults()) {
+            for (BuildResultsSummary jobResult : result.getBuildResults()) {
+                blocks.add(blockUtils.context(getJobSummary(result, jobResult)));
             }
-            blocks.add(new DividerBlock());
+        }
+        blocks.add(new DividerBlock());
 
-            commitDetailsProvider.attach(blocks, buildContext);
-            jiraIssueDetailsProvider.attach(blocks, resultsSummary);
+        commitDetailsProvider.attach(blocks, buildContext);
+        jiraIssueDetailsProvider.attach(blocks, resultsSummary);
 
-            VariableContext variables = buildContext.getVariableContext();
-            String messageTs = slack.send("general", blocks, variables.getResultVariables().get("custom.bamboo.slack.build.message"));
-            variables.addResultVariable("custom.bamboo.slack.build.message", messageTs);
+        VariableContext variables = buildContext.getVariableContext();
+        try {
+            variables.addResultVariable(
+                    "custom.bamboo.slack.build.message",
+                    slack.send("general", blocks, variables.getResultVariables().get("custom.bamboo.slack.build.message").getValue())
+            );
         } catch (IOException | SlackApiException e) {
             e.printStackTrace();
         }
@@ -118,5 +122,9 @@ abstract public class AbstractActionListener {
 
     public void setCommitDetailsProvider(CommitDetailsProvider commitDetailsProvider) {
         this.commitDetailsProvider = commitDetailsProvider;
+    }
+
+    public void setActiveObjects(@ComponentImport ActiveObjects activeObjects) {
+        this.ao = activeObjects;
     }
 }
