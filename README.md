@@ -9,6 +9,6 @@ Get instant updates about your build and deployment process.
 - Support for message update for deployment and build progress to reduce number of noise
 - xUnit test reports 
 - Commit details
-- Advance Jira issues integration via API 
+- Advance Jira issues integration via API (unfortunately OAuth linked apps are only partially supported)
 
 ## How it looks like

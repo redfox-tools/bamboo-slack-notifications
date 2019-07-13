@@ -27,7 +27,6 @@ public class SlackConfigurationAction extends BambooActionSupport implements Glo
 
     private final XsrfTokenAccessor xsrfTokenAccessor;
     private final PluginSettings pluginSettings;
-    private JiraClient jiraClient;
 
     @Autowired
     public SlackConfigurationAction(@ComponentImport BambooPermissionManager bambooPermissionManager,
@@ -35,11 +34,9 @@ public class SlackConfigurationAction extends BambooActionSupport implements Glo
                                     @ComponentImport AdministrationConfigurationAccessor administrationConfigurationAccessor,
                                     @ComponentImport PlanManager planManager,
                                     @ComponentImport XsrfTokenAccessor xsrfTokenAccessor,
-                                    @ComponentImport PluginSettingsFactory pluginSettingsFactory,
-                                    JiraClient jiraClient) {
+                                    @ComponentImport PluginSettingsFactory pluginSettingsFactory) {
         this.xsrfTokenAccessor = xsrfTokenAccessor;
         this.pluginSettings = pluginSettingsFactory.createGlobalSettings();
-        this.jiraClient = jiraClient;
         setBambooPermissionManager(bambooPermissionManager);
         setDeploymentProjectService(deploymentProjectService);
         setAdministrationConfigurationAccessor(administrationConfigurationAccessor);
@@ -64,7 +61,6 @@ public class SlackConfigurationAction extends BambooActionSupport implements Glo
                 if (request.getParameter(SLACK_BOT_JIRA_PASSWORD).isEmpty() && (stored == null || stored.isEmpty())) {
                     handleField(request, SLACK_BOT_JIRA_PASSWORD, getText("tools.redfox.bamboo.notifications.slack.jira.error.password"));
                 }
-                jiraClient.resetClient();
             }
         }
 
@@ -90,7 +86,7 @@ public class SlackConfigurationAction extends BambooActionSupport implements Glo
     }
 
     public String getEnableAppUrl() {
-        return "***REMOVED***";
+        return "https://slack.com/oauth/authorize?client_id=688687762519.678094921075&scope=read&redirect_uri=https://mp.ngrok.io/bamboo/admin/slack/authorize.action";
     }
 
     private void handleField(HttpServletRequest request, String name, String error) {

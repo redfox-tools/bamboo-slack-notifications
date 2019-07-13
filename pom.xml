@@ -215,9 +215,14 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.atlassian.jira</groupId>
-            <artifactId>jira-rest-java-client-core</artifactId>
-            <version>5.1.0-476bd700</version>
+            <groupId>com.konghq</groupId>
+            <artifactId>unirest-java</artifactId>
+            <version>2.3.08</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.9</version>
         </dependency>
         <dependency>
             <groupId>com.atlassian.bamboo</groupId>
@@ -255,16 +260,8 @@
                             org.eclipse.gemini.blueprint.*;resolution:="optional",
                             android.os;resolution:="optional",
                             android.util;resolution:="optional",
-                            org.conscrypt;resolution:="optional",
-                            com.sun.xml.fastinfoset.sax;resolution:="optional",
-                            com.sun.xml.fastinfoset.stax;resolution:="optional",
-                            net.spy.memcached;resolution:="optional",
                             org.apache.avalon.framework.logger;resolution:="optional",
-                            org.eclipse.persistence.descriptors;resolution:="optional",
-                            org.eclipse.persistence.*;resolution:="optional",
-                            org.joda.convert;resolution:="optional",
-                            org.jvnet.fastinfoset;resolution:="optional",
-                            org.jvnet.staxex;resolution:="optional",
+                            org.conscrypt;resolution:="optional",
                             *
                         </Import-Package>
 
