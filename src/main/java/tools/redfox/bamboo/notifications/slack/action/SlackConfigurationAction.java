@@ -18,8 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 public class SlackConfigurationAction extends BambooActionSupport implements GlobalAdminSecurityAware {
-    public static final String SENTRY_ORGANISATION_KEY = "sentryOrganisation";
-    public static final String SENTRY_API_KEY = "sentryApiKey";
+    public static final String SLACK_BOT_OAUTH_TOKEN = "sentryOrganisation";
     public static final String PLUGIN_STORAGE_KEY = "tools.redfox.bamboo.notifications.slack";
 
     private final XsrfTokenAccessor xsrfTokenAccessor;
@@ -45,15 +44,10 @@ public class SlackConfigurationAction extends BambooActionSupport implements Glo
     public void validate() {
         HttpServletRequest request = ServletActionContext.getRequest();
         if (request.getMethod().equals("POST")) {
-            if (request.getParameter(SENTRY_ORGANISATION_KEY).isEmpty()) {
-                addFieldError(SENTRY_ORGANISATION_KEY, getText("tools.redfox.bamboo.notifications.sentry.global.organisation.error"));
+            if (request.getParameter(SLACK_BOT_OAUTH_TOKEN).isEmpty()) {
+                addFieldError(SLACK_BOT_OAUTH_TOKEN, getText("tools.redfox.bamboo.notifications.sentry.global.organisation.error"));
             } else {
-
-            }
-            if (request.getParameter(SENTRY_API_KEY).isEmpty()) {
-                addFieldError(SENTRY_API_KEY, "tools.redfox.bamboo.notifications.sentry.global.api-key.error");
-            } else {
-                pluginSettings.put(PLUGIN_STORAGE_KEY + ".api_key", request.getParameter(SENTRY_API_KEY));
+                pluginSettings.put(PLUGIN_STORAGE_KEY + ".bot.oauth", request.getParameter(SLACK_BOT_OAUTH_TOKEN));
             }
         }
     }
@@ -62,16 +56,12 @@ public class SlackConfigurationAction extends BambooActionSupport implements Glo
     public String execute() throws Exception {
         HttpServletRequest request = ServletActionContext.getRequest();
 
-        pluginSettings.put(PLUGIN_STORAGE_KEY + ".oauth.both", "***REMOVED***");
-        pluginSettings.put(PLUGIN_STORAGE_KEY + ".oauth.user", "***REMOVED***");
-
         if (request.getMethod().equals("POST")) {
             return "reload";
         }
 
         Map<String, Object> context = ServletActionContext.getValueStack(request).getContext();
-        context.put(SENTRY_ORGANISATION_KEY, pluginSettings.get(PLUGIN_STORAGE_KEY + ".organisation"));
-        context.put(SENTRY_API_KEY, pluginSettings.get(PLUGIN_STORAGE_KEY + ".api_key"));
+        context.put(SLACK_BOT_OAUTH_TOKEN, pluginSettings.get(PLUGIN_STORAGE_KEY + ".bot.oauth"));
         context.put("saved", request.getParameterMap().containsKey("saved") && getFieldErrors().size() == 0);
         context.put("cancelUrl", getBambooUrl().withBaseUrlFromRequest("/admin/administer.action"));
 

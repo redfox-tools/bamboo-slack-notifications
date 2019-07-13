@@ -49,22 +49,12 @@ public class SlackRecipient extends AbstractNotificationRecipient {
 
     @Override
     public void populate(Map<String, String[]> params) {
-        settings.put("notificationSlackUrl", getParam("notificationSlackUrl", params));
         settings.put("notificationSlackChannel", getParam("notificationSlackChannel", params));
     }
 
     @Override
     public ErrorCollection validate(Map<String, String[]> params) {
         ErrorCollection errorCollection = new SimpleErrorCollection();
-
-        String[] url = params.get("notificationSlackUrl");
-        if (url != null && url.length != 0) {
-            settings.put("notificationSlackUrl", this.getParam("notificationSlackUrl", params));
-            if (!UrlValidator.getInstance().isValid(settings.get("notificationSlackUrl"))) {
-                errorCollection.addError("notificationSlackUrl", "Please enter a valid webhook URL");
-            }
-        }
-
         String[] channel = params.get("notificationSlackChannel");
         if (channel != null && channel.length != 0) {
             settings.put("notificationSlackChannel", this.getParam("notificationSlackChannel", params));

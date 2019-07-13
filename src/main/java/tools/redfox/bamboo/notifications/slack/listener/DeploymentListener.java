@@ -165,7 +165,7 @@ public class DeploymentListener {
 
 
 //        if (!notifications.getSortedNotificationRules().stream().anyMatch(n -> n.getRecipientType().equals("tools.redfox.bamboo.slack-notifications:slackNotification"))) {
-//            logger.info("Ignore deployment as environment '{}' is not configured with Sentry Notification", result.getEnvironment().getName());
+//            logger.howto("Ignore deployment as environment '{}' is not configured with Sentry Notification", result.getEnvironment().getName());
 //            return;
 //        }
     }

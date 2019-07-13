@@ -27,20 +27,13 @@
         <link linkId="slack-settings-link">/admin/slack/settings.action</link>
     </web-item>
 
-    <xwork key="sentrySettings" name="Configure slack integration" >
+    <xwork key="slackSettings" name="Configure slack integration" >
         <package extends="admin" name="settings" namespace="/admin/slack">
             <action class="tools.redfox.bamboo.notifications.slack.action.SlackConfigurationAction" name="settings">
                 <interceptor-ref name="defaultStack"/>
                 <result name="input" type="freemarker">/templates/settings.ftl</result>
                 <result name="success" type="freemarker">/templates/settings.ftl</result>
-                <result name="reload" type="redirect">/admin/sentry/settings.action?saved=true</result>
-            </action>
-
-            <action class="tools.redfox.bamboo.notifications.slack.action.AuthorizeAction" name="authorize">
-                <interceptor-ref name="defaultStack"/>
-                <result name="input" type="freemarker">/templates/settings.ftl</result>
-                <result name="success" type="freemarker">/templates/settings.ftl</result>
-                <result name="reload" type="redirect">/admin/sentry/settings.action?saved=true</result>
+                <result name="reload" type="redirect">/admin/slack/settings.action?saved=true</result>
             </action>
         </package>
     </xwork>
@@ -50,8 +43,14 @@
         <entity>tools.redfox.bamboo.notifications.slack.persistence.model.SlackNotification</entity>
     </ao>
 
-<!--    <notificationType key="chainCompleted.allBuilds" name="All Builds Completed" class="tools.redfox.bamboo.notifications.slack.types.BuildFinishedNotificationType" weight="10">-->
-<!--        <description>Notification sent for every fully completed build</description>-->
-<!--        <scope>chain</scope>-->
-<!--    </notificationType>-->
+    <web-resource key="howto" name="How-to images" >
+        <resource type="download" name="01_create_app.png" location="images/howto/01_create_app.png" />
+        <resource type="download" name="02_configure_bot.png" location="images/howto/02_configure_bot.png" />
+        <resource type="download" name="03_add_bot_user.png" location="images/howto/03_add_bot_user.png" />
+        <resource type="download" name="04_configure_bot_user.png" location="images/howto/04_configure_bot_user.png" />
+        <resource type="download" name="05_configure_permissions.png" location="images/howto/05_configure_permissions.png" />
+        <resource type="download" name="06_install_app.png" location="images/howto/06_install_app.png" />
+        <resource type="download" name="07_accept.png" location="images/howto/07_accept.png" />
+        <resource type="download" name="08_token.png" location="images/howto/08_token.png" />
+    </web-resource>
 </atlassian-plugin>
