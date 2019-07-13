@@ -4,6 +4,12 @@
     <title>Slack integration settings</title>
 </head>
 <body>
+[#if saved ]
+    <div class="aui-message success">
+        Slack configuration has been updated.        <span class="aui-icon icon-success"></span>
+    </div>
+    <br/>
+[/#if]
 [@ui.bambooSection titleKey="tools.redfox.bamboo.notifications.slack.configuration.title" descriptionKey="tools.redfox.bamboo.notifications.slack.configuration.description"]
     <form id="slackSettings" method="post" class="aui">
         <div class="field-group required">

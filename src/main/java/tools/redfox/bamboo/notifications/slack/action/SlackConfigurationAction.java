@@ -18,12 +18,11 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 public class SlackConfigurationAction extends BambooActionSupport implements GlobalAdminSecurityAware {
-    public static final String SLACK_BOT_OAUTH_TOKEN = "sentryOrganisation";
+    public static final String SLACK_BOT_OAUTH_TOKEN = "slackOAuthBot";
     public static final String PLUGIN_STORAGE_KEY = "tools.redfox.bamboo.notifications.slack";
 
     private final XsrfTokenAccessor xsrfTokenAccessor;
     private final PluginSettings pluginSettings;
-    private UrlBuilder urlBuilder;
 
     @Autowired
     public SlackConfigurationAction(@ComponentImport BambooPermissionManager bambooPermissionManager,
