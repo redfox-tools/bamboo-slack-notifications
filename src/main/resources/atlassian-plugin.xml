@@ -17,6 +17,7 @@
     </notificationRecipient>
 
     <bambooEventListener key="slackDeploymentEventListener" class="tools.redfox.bamboo.notifications.slack.listener.DeploymentListener"/>
+    <bambooEventListener key="pluginEventListener" class="tools.redfox.bamboo.notifications.slack.listener.PluginEventListener"/>
 
     <preChainAction key="slackPreBuildAction" class="tools.redfox.bamboo.notifications.slack.listener.PreBuildAction" />
     <postChainAction key="slackPostBuildAction" class="tools.redfox.bamboo.notifications.slack.listener.PostBuildAction" />

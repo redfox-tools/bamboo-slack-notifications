@@ -1,13 +1,15 @@
 package tools.redfox.bamboo.notifications.slack.services;
 
+import com.atlassian.bamboo.jira.jiraissues.InternalLinkedJiraIssue;
 import com.atlassian.bamboo.jira.jiraissues.JiraIssueDetailsBuilderImpl;
 import com.atlassian.bamboo.jira.jiraissues.LinkedJiraIssue;
-import com.atlassian.bamboo.jira.jirametadata.JiraTypeImpl;
-import com.atlassian.jira.rest.client.api.JiraRestClient;
-import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
+import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.spring.scanner.annotation.component.BambooComponent;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import kong.unirest.GetRequest;
+import kong.unirest.Unirest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,22 +17,23 @@ import tools.redfox.bamboo.notifications.slack.action.SlackConfigurationAction;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.URLEncoder;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @BambooComponent
 public class JiraClient {
     private URI uri;
     private String password;
     private String username;
-    private JiraRestClient client;
 
     private static final Logger logger = LoggerFactory.getLogger(JiraClient.class);
 
     @Autowired
-    public JiraClient(PluginSettingsFactory pluginSettingsFactory) {
+    public JiraClient(@ComponentImport PluginAccessor pluginAccessor, PluginSettingsFactory pluginSettingsFactory) {
         PluginSettings settings = pluginSettingsFactory.createGlobalSettings();
+        String pluginVersion = pluginAccessor.getPlugin("tools.redfox.bamboo.slack-notifications").getPluginInformation().getVersion();
+
         try {
             uri = new URI((String) settings.get(SlackConfigurationAction.PLUGIN_STORAGE_KEY + SlackConfigurationAction.SLACK_BOT_JIRA_URL));
             username = (String) settings.get(SlackConfigurationAction.PLUGIN_STORAGE_KEY + SlackConfigurationAction.SLACK_BOT_JIRA_USERNAME);
@@ -38,41 +41,18 @@ public class JiraClient {
         } catch (URISyntaxException | NullPointerException e) {
             logger.info("Jira integration for slack is disabled due to missing config");
         }
+
+        Unirest
+                .config()
+                .setDefaultHeader("Content-Type", "application/json")
+                .setDefaultHeader("User-Agent", String.format("BambooSlackPlugin/%s", pluginVersion))
+                .setDefaultBasicAuth(username, password);
     }
 
     public void getIssueDetails(Set<LinkedJiraIssue> issues) {
-        Map<String, LinkedJiraIssue> mappedIssues = new HashMap<String, LinkedJiraIssue>() {{
-            for (LinkedJiraIssue issue : issues) {
-                put(issue.getIssueKey(), issue);
-            }
-        }};
-
-        getClient()
-                .getSearchClient().searchJql("issueKey = BT-1")
-                .done(searchResult -> {
-                    searchResult.getIssues().forEach(issue -> {
-                        mappedIssues.get(issue.getKey()).setJiraIssueDetails(
-                                new JiraIssueDetailsBuilderImpl()
-                                        .issueKey(issue.getKey())
-                                        .summary(issue.getSummary())
-                                        .type(new JiraTypeImpl(issue.getIssueType().getName(), ""))
-                                        .build()
-                        );
-                    });
-                })
-                .fail(r -> {
-                    resetClient();
-                })
-                .claim();
-    }
-
-    protected JiraRestClient getClient() {
-        if (client == null) {
-            AsynchronousJiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
-            client = factory.createWithBasicHttpAuthentication(uri, username, password);
-        }
-
-        return client;
+        String jql = "issueKeys IN " + issues.stream().map(InternalLinkedJiraIssue::getIssueKey).collect(Collectors.joining(", ","[","]"));
+        GetRequest result = Unirest.get(uri + "/rest/api/2/search?jql=issueKey IN " + URLEncoder.encode(jql));
+        int i = 1;
     }
 
     public boolean isConfigured() {
@@ -80,6 +60,5 @@ public class JiraClient {
     }
 
     public void resetClient() {
-        client = null;
     }
 }
