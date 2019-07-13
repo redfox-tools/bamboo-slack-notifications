@@ -11,6 +11,7 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import tools.redfox.bamboo.notifications.slack.slack.SlackService;
 import tools.redfox.bamboo.notifications.slack.transport.SlackTransport;
 
 import java.util.HashMap;
@@ -20,11 +21,13 @@ import java.util.Map;
 
 public class SlackRecipient extends AbstractNotificationRecipient {
     private TemplateRenderer templateRenderer;
+    private SlackService slackService;
     private Map<String, String> settings = new HashMap<>();
 
     @Autowired
-    public SlackRecipient(@ComponentImport TemplateRenderer templateRenderer) {
+    public SlackRecipient(@ComponentImport TemplateRenderer templateRenderer, SlackService slackService) {
         this.templateRenderer = templateRenderer;
+        this.slackService = slackService;
     }
 
     @Override
@@ -37,7 +40,7 @@ public class SlackRecipient extends AbstractNotificationRecipient {
     @Override
     public List<NotificationTransport> getTransports() {
         return new LinkedList<NotificationTransport>() {{
-            add(new SlackTransport());
+            add(new SlackTransport(slackService));
         }};
     }
 
@@ -73,7 +76,7 @@ public class SlackRecipient extends AbstractNotificationRecipient {
     @Override
     public String getEditHtml() {
         String editTemplateLocation = this.notificationRecipientModuleDescriptor.getEditTemplate();
-        Map<String, Object> context = new HashMap();
+        Map<String, Object> context = new HashMap<>();
         settings.forEach(context::put);
 
         return StringUtils.defaultString(this.templateRenderer.render(editTemplateLocation, context));

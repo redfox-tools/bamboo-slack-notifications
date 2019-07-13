@@ -1,6 +1,5 @@
 package tools.redfox.bamboo.notifications.slack.listener;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.bamboo.chains.ChainResultsSummary;
 import com.atlassian.bamboo.chains.ChainStageResult;
 import com.atlassian.bamboo.project.Project;
@@ -9,7 +8,6 @@ import com.atlassian.bamboo.resultsummary.ResultsSummaryManager;
 import com.atlassian.bamboo.v2.build.BuildContext;
 import com.atlassian.bamboo.variable.VariableContext;
 import com.atlassian.bamboo.variable.VariableDefinitionContext;
-import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.model.block.DividerBlock;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
@@ -35,7 +33,6 @@ abstract public class AbstractActionListener {
     private BlockUtils blockUtils;
     private JiraIssueDetailsProvider jiraIssueDetailsProvider;
     private CommitDetailsProvider commitDetailsProvider;
-    private ActiveObjects ao;
 
     public enum Notification {
         STARTED,
@@ -148,9 +145,5 @@ abstract public class AbstractActionListener {
 
     public void setCommitDetailsProvider(CommitDetailsProvider commitDetailsProvider) {
         this.commitDetailsProvider = commitDetailsProvider;
-    }
-
-    public void setActiveObjects(@ComponentImport ActiveObjects activeObjects) {
-        this.ao = activeObjects;
     }
 }
