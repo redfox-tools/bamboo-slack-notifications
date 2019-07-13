@@ -133,6 +133,8 @@ public class DeploymentListener {
                 }}
         );
 
+        String textVersion = "";
+
         ao.executeInTransaction(
                 new TransactionCallback<Object>() {
                     @Override
@@ -152,7 +154,7 @@ public class DeploymentListener {
                         }
 
                         try {
-                            notification.setMessageTs(slack.send("general", blocks, notification.getMessageTs()));
+                            notification.setMessageTs(slack.send("general", blocks, textVersion, notification.getMessageTs()));
                             notification.save();
                             ao.flushAll();
                         } catch (IOException | SlackApiException e) {
@@ -199,6 +201,20 @@ public class DeploymentListener {
                 buildResult.getImmutablePlan().getProject().getName(),
                 urlProvider.version(result.getDeploymentVersion().getId()),
                 result.getDeploymentVersionName()
+        );
+    }
+
+    private String getHeadlineText(DeploymentResult result, ResultsSummary buildResult, DeploymentEvent event) {
+        String headline;
+        if (event instanceof DeploymentStartedEvent) {
+            headline = "Deploying version {0} of {1}";
+        } else {
+            headline = "Version {0} of {1} deployed";
+        }
+        return MessageFormat.format(
+                headline,
+                result.getDeploymentVersionName(),
+                buildResult.getImmutablePlan().getProject().getName()
         );
     }
 

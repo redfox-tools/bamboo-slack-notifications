@@ -4,15 +4,16 @@ import com.atlassian.plugin.spring.scanner.annotation.component.BambooComponent;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.RequestConfigurator;
 import com.github.seratch.jslack.api.methods.SlackApiException;
-import com.github.seratch.jslack.api.methods.SlackApiResponse;
 import com.github.seratch.jslack.api.methods.request.chat.ChatPostMessageRequest;
 import com.github.seratch.jslack.api.methods.request.chat.ChatUpdateRequest;
 import com.github.seratch.jslack.api.methods.response.channels.ChannelsListResponse;
 import com.github.seratch.jslack.api.methods.response.chat.ChatPostMessageResponse;
 import com.github.seratch.jslack.api.methods.response.chat.ChatUpdateResponse;
 import com.github.seratch.jslack.api.model.Channel;
+import com.github.seratch.jslack.api.model.block.ContextBlock;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
-import tools.redfox.bamboo.notifications.slack.persistence.model.SlackNotification;
+import com.github.seratch.jslack.api.model.block.SectionBlock;
+import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
 
 import java.io.IOException;
 import java.util.List;
@@ -68,20 +69,20 @@ public class SlackService {
         );
     }
 
-    public String send(String channel, List<LayoutBlock> blocks, String notification) throws IOException, SlackApiException {
+    public String send(String channel, List<LayoutBlock> blocks, String textVersion, String notification) throws IOException, SlackApiException {
         if (notification == null) {
             return send(
                     req -> req
                             .channel(getChannelId(channel))
                             .blocks(blocks)
-                            .text(blocks.get(0).toString())
+                            .text(textVersion)
             ).getTs();
         } else {
             return update(
                     req -> req
                             .channel(getChannelId(channel))
                             .blocks(blocks)
-                            .text(blocks.get(0).toString()),
+                            .text(textVersion),
                     notification
             ).getTs();
         }

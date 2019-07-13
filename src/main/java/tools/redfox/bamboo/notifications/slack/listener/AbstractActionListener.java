@@ -50,6 +50,8 @@ abstract public class AbstractActionListener {
         blocks.add(blockUtils.header(getHeadline(chainResultSummary.getImmutablePlan().getProject(), buildContext, notification)));
         blocks.add(blockUtils.context(getAuthor(buildContext)));
         blocks.add(new DividerBlock());
+        String textVersion = getHeadlineText(chainResultSummary.getImmutablePlan().getProject(), buildContext, notification)
+                + " " + getAuthorText(buildContext);
 
         for (ChainStageResult result : chainResultSummary.getStageResults()) {
             for (BuildResultsSummary jobResult : result.getBuildResults()) {
@@ -66,7 +68,7 @@ abstract public class AbstractActionListener {
             VariableDefinitionContext ts = variables.getResultVariables().get("custom.bamboo.slack.build.message");
             variables.addResultVariable(
                     "custom.bamboo.slack.build.message",
-                    slack.send("general", blocks, ts == null ? null : ts.getValue())
+                    slack.send("general", blocks, textVersion, ts == null ? null : ts.getValue())
             );
         } catch (IOException | SlackApiException e) {
             e.printStackTrace();
@@ -84,6 +86,11 @@ abstract public class AbstractActionListener {
     }
 
     @NotNull
+    private String getAuthorText(BuildContext buildContext) {
+        return buildContext.getTriggerReason().getNameForSentence();
+    }
+
+    @NotNull
     private String getHeadline(Project project, BuildContext buildContext, Notification notification) {
         String headline = new HashMap<Notification, String>() {{
             put(Notification.STARTED, "Starting build #<{0}|{1}> of <{2}|{3}>");
@@ -96,6 +103,21 @@ abstract public class AbstractActionListener {
                 urlProvider.buildResult(buildContext.getBuildResultKey()),
                 buildContext.getBuildNumber(),
                 urlProvider.projectPage(project.getKey()),
+                project.getName()
+        );
+    }
+
+    @NotNull
+    private String getHeadlineText(Project project, BuildContext buildContext, Notification notification) {
+        String headline = new HashMap<Notification, String>() {{
+            put(Notification.STARTED, "Starting build #{0} of {1}");
+            put(Notification.JOB, "Building {0} (#{1})");
+            put(Notification.FINISHED, "Build #{0} of {1} completed. ");
+        }}.getOrDefault(notification, "Unknown event");
+
+        return MessageFormat.format(
+                headline,
+                buildContext.getBuildNumber(),
                 project.getName()
         );
     }
