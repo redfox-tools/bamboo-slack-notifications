@@ -12,6 +12,8 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.xsrf.XsrfTokenAccessor;
 import org.apache.struts2.ServletActionContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import tools.redfox.bamboo.notifications.slack.services.JiraClient;
+import tools.redfox.bamboo.notifications.slack.services.JiraIssueDetailsProvider;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -25,6 +27,7 @@ public class SlackConfigurationAction extends BambooActionSupport implements Glo
 
     private final XsrfTokenAccessor xsrfTokenAccessor;
     private final PluginSettings pluginSettings;
+    private JiraClient jiraClient;
 
     @Autowired
     public SlackConfigurationAction(@ComponentImport BambooPermissionManager bambooPermissionManager,
@@ -32,9 +35,11 @@ public class SlackConfigurationAction extends BambooActionSupport implements Glo
                                     @ComponentImport AdministrationConfigurationAccessor administrationConfigurationAccessor,
                                     @ComponentImport PlanManager planManager,
                                     @ComponentImport XsrfTokenAccessor xsrfTokenAccessor,
-                                    @ComponentImport PluginSettingsFactory pluginSettingsFactory) {
+                                    @ComponentImport PluginSettingsFactory pluginSettingsFactory,
+                                    JiraClient jiraClient) {
         this.xsrfTokenAccessor = xsrfTokenAccessor;
         this.pluginSettings = pluginSettingsFactory.createGlobalSettings();
+        this.jiraClient = jiraClient;
         setBambooPermissionManager(bambooPermissionManager);
         setDeploymentProjectService(deploymentProjectService);
         setAdministrationConfigurationAccessor(administrationConfigurationAccessor);
@@ -47,13 +52,19 @@ public class SlackConfigurationAction extends BambooActionSupport implements Glo
         if (request.getMethod().equals("POST")) {
             handleField(request, SLACK_BOT_OAUTH_TOKEN, getText("tools.redfox.bamboo.notifications.slack.slack.error.oauth"));
 
+            if (!request.getParameter(SLACK_BOT_JIRA_PASSWORD).isEmpty()) {
+                pluginSettings.put(PLUGIN_STORAGE_KEY + SLACK_BOT_JIRA_PASSWORD, request.getParameter(SLACK_BOT_JIRA_PASSWORD));
+            }
+
             if (!request.getParameter(SLACK_BOT_JIRA_URL).isEmpty() || !request.getParameter(SLACK_BOT_JIRA_USERNAME).isEmpty()) {
                 handleField(request, SLACK_BOT_JIRA_URL, getText("tools.redfox.bamboo.notifications.slack.jira.error.url"));
                 handleField(request, SLACK_BOT_JIRA_USERNAME, getText("tools.redfox.bamboo.notifications.slack.jira.error.username"));
                 String stored = (String) pluginSettings.get(PLUGIN_STORAGE_KEY + SLACK_BOT_JIRA_PASSWORD);
-                if (request.getParameter(SLACK_BOT_JIRA_PASSWORD).isEmpty() && stored != null && stored.isEmpty()) {
+
+                if (request.getParameter(SLACK_BOT_JIRA_PASSWORD).isEmpty() && (stored == null || stored.isEmpty())) {
                     handleField(request, SLACK_BOT_JIRA_PASSWORD, getText("tools.redfox.bamboo.notifications.slack.jira.error.password"));
                 }
+                jiraClient.resetClient();
             }
         }
 

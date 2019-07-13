@@ -38,13 +38,25 @@ public class BlockUtils {
     }
 
     public MarkdownTextObject markdownLink(String url, String name) {
+        return markdownLink(url, name, null);
+    }
+
+    public MarkdownTextObject markdownLink(String url, String name, String comment) {
         return MarkdownTextObject.builder().text(
-                MessageFormat.format("<{0}|{1}>", url, name)
+                MessageFormat.format("<{0}|{1}>{2}", url, name, comment != null ? " - " + comment : "")
         ).build();
     }
 
     public MarkdownTextObject markdownLink(LinkedJiraIssue issue) {
-        return markdownLink(urlProvider.jiraIssue(issue.getIssueKey()), issue.getIssueKey());
+        String comment = null;
+        if (issue.getJiraIssueDetails() != null) {
+            comment = MessageFormat.format(
+                    "{0} - {1}",
+                    issue.getJiraIssueDetails().getType().getTypeDescription(),
+                    issue.getJiraIssueDetails().getSummary()
+            );
+        }
+        return markdownLink(urlProvider.jiraIssue(issue.getIssueKey()), issue.getIssueKey(), comment);
     }
 
     public SectionBlock header(String headline) {
