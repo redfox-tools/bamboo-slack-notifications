@@ -4,6 +4,7 @@ import com.atlassian.applinks.api.ApplicationLinkService;
 import com.atlassian.applinks.api.application.jira.JiraApplicationType;
 import com.atlassian.bamboo.commit.CommitContext;
 import com.atlassian.bamboo.configuration.AdministrationConfigurationAccessor;
+import com.atlassian.bamboo.resultsummary.BuildResultsSummary;
 import com.atlassian.bamboo.utils.BambooUrl;
 import com.atlassian.bamboo.vcs.configuration.PlanRepositoryDefinition;
 import com.atlassian.bamboo.vcs.viewer.runtime.VcsRepositoryViewer;
@@ -61,5 +62,9 @@ public class UrlProvider {
 
     public String deployment(long deploymentId) {
         return bambooUrl.getBaseUrl(UrlMode.ABSOLUTE) + "/deploy/viewDeploymentResult.action?deploymentResultId=" + deploymentId;
+    }
+
+    public String job(BuildResultsSummary result) {
+        return bambooUrl.getBaseUrl(UrlMode.ABSOLUTE) + "/browse/" + result.getBuildResultKey();
     }
 }

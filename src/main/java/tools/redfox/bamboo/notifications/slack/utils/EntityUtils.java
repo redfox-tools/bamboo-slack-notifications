@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.Date;
 
 @BambooComponent
@@ -46,16 +47,20 @@ public class EntityUtils {
     }
 
     public String jobResult(String stage, BuildResultsSummary result) {
-        String status = MessageFormat.format("{0} *{1}* | {2}", EmojiResolver.emoji(result), stage, result.getPlanName());
-        if (result.getTestResultsSummary().getTotalTestCaseCount() == 0) {
-            return status;
+        StringBuffer status = new StringBuffer(MessageFormat.format("{0} *{1}* | {2}", EmojiResolver.emoji(result), stage, result.getPlanName()));
+        if (result.getTestResultsSummary().getTotalTestCaseCount() > 0) {
+            status.append(MessageFormat.format(
+                    " {0} in {1}",
+                    result.getTestSummary(),
+                    LocalTime.MIN.plusSeconds(result.getTestResultsSummary().getTotalTestDuration() / 1000).toString()
+            ));
         }
 
-        return status + MessageFormat.format(
-                "{0} in {1}",
-                result.getTestSummary(),
-                result.getTestResultsSummary().getTotalTestDuration()
-        );
+        if (result.isFinished()) {
+            status.append(MessageFormat.format(" (<{0}|results>)", urlProvider.job(result)));
+        }
+
+        return status.toString();
     }
 
     public String commit(CommitContext commitContext, PlanRepositoryDefinition repositoryData) {
