@@ -1,4 +1,11 @@
-[@ww.textfield label="Channel" name="notificationSlackChannel" value="${notificationSlackChannel!}" class="long-field" required="true"/]
+[#if !configured ]
+    <div class="aui-message error">
+        You need to configure slack integration before using this notification. <span
+                class="aui-icon icon-error"></span>
+    </div>
+[#else]
+    [@ww.textfield label="Channel" name="notificationSlackChannel" value="${notificationSlackChannel!}" class="long-field" required="true"/]
+[/#if]
 
 <script>
     AJS.toInit(function () {
@@ -10,7 +17,6 @@
             recipientType.each((idx, el, y) => {
                 console.log(idx, el, y);
                 var el = AJS.$(el);
-                // console.log(el.val(), (hide && el.val() !== "tools.redfox.bamboo.slack-notifications:recipient.slack.channel"));
                 el.prop("hidden", (hide && el.val() !== "tools.redfox.bamboo.slack-notifications:recipient.slack.channel"));
                 el.prop("selected", el.val() === "tools.redfox.bamboo.slack-notifications:recipient.slack.channel").change();
             });

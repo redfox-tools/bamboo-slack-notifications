@@ -1,11 +1,14 @@
-You have successfully created an Atlassian Plugin!
+# Slack notifications for Bamboo
 
-Here are the SDK commands you'll use immediately:
+Get instant updates about your build and deployment process.
 
-* atlas-run   -- installs this plugin into the product and starts it on localhost
-* atlas-debug -- same as atlas-run, but allows a debugger to attach at port 5005
-* atlas-help  -- prints description for all commands in the SDK
+## Why use that plugin:
+- Support for oAuth authentication with internal applications instead of incoming webhooks which are deprecated
+- Support for all notification type provided by Bamboo
+- Additional notifications about build and deployment progress
+- Support for message update for deployment and build progress to reduce number of noise
+- xUnit test reports 
+- Commit details
+- Advance Jira issues integration via API 
 
-Full documentation is always available at:
-
-https://developer.atlassian.com/display/DOCS/Introduction+to+the+Atlassian+Plugin+SDK
+## How it looks like

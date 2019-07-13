@@ -95,9 +95,9 @@ abstract public class AbstractActionListener {
     @NotNull
     private String getHeadline(Project project, BuildContext buildContext, Notification notification) {
         String headline = new HashMap<Notification, String>() {{
-            put(Notification.STARTED, "Starting build #<{0}|{1}> of <{2}|{3}>");
-            put(Notification.JOB, "Building <{2}|{3}> (#<{0}|{1}>)");
-            put(Notification.FINISHED, "Build #<{0}|{1}> of <{2}|{3}> completed. ");
+            put(Notification.STARTED, "Starting build #<{0}|{1}> of <{2}|{3}> - branch {4}");
+            put(Notification.JOB, "Building <{2}|{3}> (#<{0}|{1}>) - branch {4}");
+            put(Notification.FINISHED, "Build #<{0}|{1}> of <{2}|{3}> - branch {4} completed. ");
         }}.getOrDefault(notification, "Unknown event");
 
         return MessageFormat.format(

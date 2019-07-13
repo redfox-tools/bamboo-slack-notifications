@@ -17,6 +17,22 @@
     <description>Push deployment notifications to slack channel</description>
     <packaging>atlassian-plugin</packaging>
 
+    <repositories>
+        <repository>
+            <id>atlassian-public</id>
+            <url>https://packages.atlassian.com/mvn/maven-external/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+            </releases>
+        </repository>
+    </repositories>
+
     <properties>
         <bamboo.version>6.9.1</bamboo.version>
         <bamboo.data.version>6.9.1</bamboo.data.version>
@@ -199,6 +215,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-rest-java-client-core</artifactId>
+            <version>5.1.0-476bd700</version>
+        </dependency>
+        <dependency>
             <groupId>com.atlassian.bamboo</groupId>
             <artifactId>atlassian-bamboo-deployments</artifactId>
             <version>${bamboo.version}</version>
@@ -235,6 +256,15 @@
                             android.os;resolution:="optional",
                             android.util;resolution:="optional",
                             org.conscrypt;resolution:="optional",
+                            com.sun.xml.fastinfoset.sax;resolution:="optional",
+                            com.sun.xml.fastinfoset.stax;resolution:="optional",
+                            net.spy.memcached;resolution:="optional",
+                            org.apache.avalon.framework.logger;resolution:="optional",
+                            org.eclipse.persistence.descriptors;resolution:="optional",
+                            org.eclipse.persistence.*;resolution:="optional",
+                            org.joda.convert;resolution:="optional",
+                            org.jvnet.fastinfoset;resolution:="optional",
+                            org.jvnet.staxex;resolution:="optional",
                             *
                         </Import-Package>
 

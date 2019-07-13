@@ -1,6 +1,8 @@
 package tools.redfox.bamboo.notifications.slack.slack;
 
 import com.atlassian.plugin.spring.scanner.annotation.component.BambooComponent;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.RequestConfigurator;
 import com.github.seratch.jslack.api.methods.SlackApiException;
@@ -10,10 +12,9 @@ import com.github.seratch.jslack.api.methods.response.channels.ChannelsListRespo
 import com.github.seratch.jslack.api.methods.response.chat.ChatPostMessageResponse;
 import com.github.seratch.jslack.api.methods.response.chat.ChatUpdateResponse;
 import com.github.seratch.jslack.api.model.Channel;
-import com.github.seratch.jslack.api.model.block.ContextBlock;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
-import com.github.seratch.jslack.api.model.block.SectionBlock;
-import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import tools.redfox.bamboo.notifications.slack.action.SlackConfigurationAction;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,16 +22,17 @@ import java.util.List;
 @BambooComponent
 public class SlackService {
     private static final Slack slack = Slack.getInstance();
-    private final String token;
     private List<Channel> channels;
+    private PluginSettingsFactory pluginSettingsFactory;
 
-    public SlackService() {
-        this.token = "***REMOVED***";
+    @Autowired
+    public SlackService(@ComponentImport PluginSettingsFactory pluginSettingsFactory) {
+        this.pluginSettingsFactory = pluginSettingsFactory;
     }
 
     public List<Channel> getChannels() throws IOException, SlackApiException {
         if (channels == null) {
-            ChannelsListResponse channelsResponse = slack.methods().channelsList(req -> req.token(token));
+            ChannelsListResponse channelsResponse = slack.methods().channelsList(req -> req.token(getToken()));
             assert channelsResponse.isOk();
             channels = channelsResponse.getChannels();
         }
@@ -56,14 +58,14 @@ public class SlackService {
 
     public ChatPostMessageResponse send(RequestConfigurator<ChatPostMessageRequest.ChatPostMessageRequestBuilder> req) throws IOException, SlackApiException {
         return slack.methods().chatPostMessage(
-                req.configure(ChatPostMessageRequest.builder()).token(token).build()
+                req.configure(ChatPostMessageRequest.builder()).token(getToken()).build()
         );
     }
 
     public ChatUpdateResponse update(RequestConfigurator<ChatUpdateRequest.ChatUpdateRequestBuilder> req, String messageTs) throws IOException, SlackApiException {
         return slack.methods().chatUpdate(
                 req.configure(ChatUpdateRequest.builder())
-                        .token(token)
+                        .token(getToken())
                         .ts(messageTs)
                         .build()
         );
@@ -86,5 +88,14 @@ public class SlackService {
                     notification
             ).getTs();
         }
+    }
+
+    public String getToken() {
+        return (String) pluginSettingsFactory.createGlobalSettings().get(SlackConfigurationAction.PLUGIN_STORAGE_KEY + SlackConfigurationAction.SLACK_BOT_OAUTH_TOKEN);
+    }
+
+    public boolean isConfigured() {
+        String token = getToken();
+        return (token != null && !token.equals(""));
     }
 }

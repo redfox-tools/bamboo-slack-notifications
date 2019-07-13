@@ -10,23 +10,37 @@
     </div>
     <br/>
 [/#if]
+
+<form id="slackSettings" method="post" class="aui">
 [@ui.bambooSection titleKey="tools.redfox.bamboo.notifications.slack.configuration.title" descriptionKey="tools.redfox.bamboo.notifications.slack.configuration.description"]
-    <form id="slackSettings" method="post" class="aui">
         <div class="field-group required">
             [@ww.textfield labelKey="tools.redfox.bamboo.notifications.slack.oauth.bot.label" name="slackOAuthBot" class="long-field" required="true"/]
         </div>
-        <div class="buttons-container">
-            <div class="buttons">
-                <input type="submit" name="save" value="Save" class="assistive"
-                       id="updateSlackSettings_defaultSave" tabindex="-1">
-                <input type="submit" name="save" value="Save" class="aui-button aui-button-primary"
-                       id="updateSlackSettings_save" accesskey="S">
-                <a class="cancel" accesskey="`" href="${cancelUrl}">Cancel</a>
-            </div>
-        </div>
-        <input type="hidden" name="atl_token" value="${action.getToken()}" />
-    </form>
 [/@ui.bambooSection]
+
+[@ui.bambooSection title="Slack Jira integration" description="Enable custom Jira integration for Slack notifications"]
+    <div class="field-group required">
+        [@ww.textfield label="URL" name="slackJiraURL" class="long-field"/]
+    </div>
+    <div class="field-group required">
+        [@ww.textfield label="Username" name="slackJiraUsername" class="long-field" /]
+    </div>
+    <div class="field-group required">
+        [@ww.password label="API Token" name="slackJiraPassword" class="long-field"/]
+    </div>
+[/@ui.bambooSection]
+
+<div class="buttons-container">
+    <div class="buttons">
+        <input type="submit" name="save" value="Save" class="assistive"
+               id="updateSlackSettings_defaultSave" tabindex="-1">
+        <input type="submit" name="save" value="Save" class="aui-button aui-button-primary"
+               id="updateSlackSettings_save" accesskey="S">
+        <a class="cancel" accesskey="`" href="${cancelUrl}">Cancel</a>
+    </div>
+</div>
+<input type="hidden" name="atl_token" value="${action.getToken()}" />
+</form>
 <br />
 <br />
 ${webResourceManager.requireResource("tools.redfox.bamboo.slack-notifications:howto")}

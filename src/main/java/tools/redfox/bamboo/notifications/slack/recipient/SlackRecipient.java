@@ -58,6 +58,12 @@ public class SlackRecipient extends AbstractNotificationRecipient {
     @Override
     public ErrorCollection validate(Map<String, String[]> params) {
         ErrorCollection errorCollection = new SimpleErrorCollection();
+
+        if (!slackService.isConfigured()) {
+            errorCollection.addError("slack", "You need to configure Slack integration");
+            return errorCollection;
+        }
+
         String[] channel = params.get("notificationSlackChannel");
         if (channel != null && channel.length != 0) {
             settings.put("notificationSlackChannel", this.getParam("notificationSlackChannel", params));
@@ -78,6 +84,7 @@ public class SlackRecipient extends AbstractNotificationRecipient {
         String editTemplateLocation = this.notificationRecipientModuleDescriptor.getEditTemplate();
         Map<String, Object> context = new HashMap<>();
         settings.forEach(context::put);
+        context.put("configured", slackService.isConfigured());
 
         return StringUtils.defaultString(this.templateRenderer.render(editTemplateLocation, context));
     }
