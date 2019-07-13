@@ -59,7 +59,7 @@
         <scope>chain</scope>
     </notificationType>
 
-    <notificationType key="slack.buildProgress" name="Build progress" class="tools.redfox.bamboo.notifications.slack.notification.DeploymentProgressNotificationType" weight="10">
+    <notificationType key="slack.deploymentProgress" name="Deployment progress" class="tools.redfox.bamboo.notifications.slack.notification.DeploymentProgressNotificationType" weight="10">
         <description>Report deployment progress</description>
         <scope>deployment</scope>
     </notificationType>

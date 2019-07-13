@@ -77,6 +77,10 @@ public class EntityUtils {
     }
 
     public String deployment(DeploymentResult result) {
+        if (result == null) {
+            return "";
+        }
+
         return MessageFormat.format(
                 "<{0}|results>",
                 urlProvider.deployment(result.getId())

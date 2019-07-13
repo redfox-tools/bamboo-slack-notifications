@@ -24,6 +24,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 abstract public class AbstractActionListener {
     private ResultsSummaryManager resultsSummaryManager;
@@ -43,6 +44,10 @@ abstract public class AbstractActionListener {
     public void sendNotification(BuildContext buildContext, ChainResultsSummary resultsSummary, Notification notification) {
         List<LayoutBlock> blocks = new LinkedList<>();
         ChainResultsSummary chainResultSummary = ((ChainResultsSummary) resultsSummaryManager.getResultsSummary(buildContext.getPlanResultKey()));
+
+        if (!chainResultSummary.getImmutablePlan().getNotificationSet().getNotificationRules().stream().anyMatch(r -> Objects.equals(r.getConditionKey(), "tools.redfox.bamboo.slack-notifications:slack.buildProgress"))) {
+            return;
+        }
 
         blocks.add(blockUtils.header(getHeadline(chainResultSummary.getImmutablePlan().getProject(), buildContext, notification)));
         blocks.add(blockUtils.context(getAuthor(buildContext)));

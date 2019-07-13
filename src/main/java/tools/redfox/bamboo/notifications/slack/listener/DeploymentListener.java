@@ -2,6 +2,7 @@ package tools.redfox.bamboo.notifications.slack.listener;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.bamboo.deployments.environments.Environment;
+import com.atlassian.bamboo.deployments.environments.service.EnvironmentService;
 import com.atlassian.bamboo.deployments.execution.events.DeploymentEvent;
 import com.atlassian.bamboo.deployments.execution.events.DeploymentFinishedEvent;
 import com.atlassian.bamboo.deployments.execution.events.DeploymentStartedEvent;
@@ -12,6 +13,7 @@ import com.atlassian.bamboo.deployments.results.service.DeploymentResultService;
 import com.atlassian.bamboo.deployments.versions.DeploymentVersion;
 import com.atlassian.bamboo.deployments.versions.service.DeploymentVersionService;
 import com.atlassian.bamboo.event.HibernateEventListenerAspect;
+import com.atlassian.bamboo.notification.NotificationManager;
 import com.atlassian.bamboo.resultsummary.ResultsSummary;
 import com.atlassian.bamboo.resultsummary.ResultsSummaryManager;
 import com.atlassian.bamboo.trigger.TriggerDefinition;
@@ -44,9 +46,11 @@ public class DeploymentListener {
     private final ResultsSummaryManager resultsSummaryManager;
     @ComponentImport
     private DeploymentProjectService deploymentProjectService;
+    private EnvironmentService environmentService;
     @ComponentImport
     private ActiveObjects ao;
 
+    private NotificationManager notificationManager;
     private SlackService slack;
     private UrlProvider urlProvider;
     private BlockUtils blockUtils;
@@ -62,6 +66,7 @@ public class DeploymentListener {
             @ComponentImport ResultsSummaryManager resultsSummaryManager,
             @ComponentImport DeploymentProjectService deploymentProjectService,
             @ComponentImport ActiveObjects ao,
+            @ComponentImport EnvironmentService environmentService,
             SlackService slack,
             UrlProvider urlProvider,
             BlockUtils blockUtils,
@@ -71,6 +76,7 @@ public class DeploymentListener {
         this.deploymentVersionService = deploymentVersionService;
         this.resultsSummaryManager = resultsSummaryManager;
         this.deploymentProjectService = deploymentProjectService;
+        this.environmentService = environmentService;
         this.slack = slack;
         this.ao = ao;
         this.urlProvider = urlProvider;
@@ -93,15 +99,6 @@ public class DeploymentListener {
     private void handleDeployementEvent(DeploymentEvent event) {
         DeploymentResult deploymentResult = deploymentResultService.getDeploymentResult(event.getDeploymentResultId());
         DeploymentVersion version = deploymentResult.getDeploymentVersion();
-        ResultsSummary buildResult = resultsSummaryManager.getResultsSummary(
-                Objects.requireNonNull(deploymentVersionService.getRelatedPlanResultKeys(version.getId()).stream().findFirst().orElse(null))
-        );
-        DeploymentProject deploymentProject = deploymentProjectService.getDeploymentProjectForVersion(version.getId());
-        Map<Long, DeploymentResult> deploymentResults = new HashMap<Long, DeploymentResult>() {{
-            for (DeploymentResult result : deploymentResultService.getDeploymentResultsForDeploymentVersion(version.getId())) {
-                put(result.getEnvironment().getId(), result);
-            }
-        }};
 
         String masterEnvironmentId = getParentEnvironmentId(deploymentResult.getEnvironment());
         DeploymentResult masterDeployment = null;
@@ -111,6 +108,23 @@ public class DeploymentListener {
         if (masterDeployment == null) {
             masterDeployment = deploymentResult;
         }
+
+        boolean masterNotification = environmentService.getNotificationSet(masterDeployment.getEnvironment().getId()).getNotificationRules().stream().anyMatch(r -> Objects.equals(r.getConditionKey(), "tools.redfox.bamboo.slack-notifications:slack.deploymentProgress"));
+        boolean currentNotification = environmentService.getNotificationSet(deploymentResult.getEnvironment().getId()).getNotificationRules().stream().anyMatch(r -> Objects.equals(r.getConditionKey(), "tools.redfox.bamboo.slack-notifications:slack.deploymentProgress"));
+
+        if (!(masterNotification || currentNotification)) {
+            return;
+        }
+
+        ResultsSummary buildResult = resultsSummaryManager.getResultsSummary(
+                Objects.requireNonNull(deploymentVersionService.getRelatedPlanResultKeys(version.getId()).stream().findFirst().orElse(null))
+        );
+        DeploymentProject deploymentProject = deploymentProjectService.getDeploymentProjectForVersion(version.getId());
+        Map<Long, DeploymentResult> deploymentResults = new HashMap<Long, DeploymentResult>() {{
+            for (DeploymentResult result : deploymentResultService.getDeploymentResultsForDeploymentVersion(version.getId())) {
+                put(result.getEnvironment().getId(), result);
+            }
+        }};
 
         List<LayoutBlock> blocks = new LinkedList<>();
         blocks.add(blockUtils.header(getHeadline(deploymentResult, buildResult, event)));
@@ -164,12 +178,6 @@ public class DeploymentListener {
                     }
                 }
         );
-
-
-//        if (!notifications.getSortedNotificationRules().stream().anyMatch(n -> n.getRecipientType().equals("tools.redfox.bamboo.slack-notifications:slackNotification"))) {
-//            logger.howto("Ignore deployment as environment '{}' is not configured with Sentry Notification", result.getEnvironment().getName());
-//            return;
-//        }
     }
 
     private boolean filterEnvironment(Environment environment, String masterEnvironmentId) {
