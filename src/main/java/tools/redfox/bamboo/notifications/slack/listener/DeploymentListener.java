@@ -14,6 +14,7 @@ import com.atlassian.bamboo.deployments.versions.DeploymentVersion;
 import com.atlassian.bamboo.deployments.versions.service.DeploymentVersionService;
 import com.atlassian.bamboo.event.HibernateEventListenerAspect;
 import com.atlassian.bamboo.notification.NotificationManager;
+import com.atlassian.bamboo.notification.NotificationRule;
 import com.atlassian.bamboo.resultsummary.ResultsSummary;
 import com.atlassian.bamboo.resultsummary.ResultsSummaryManager;
 import com.atlassian.bamboo.trigger.TriggerDefinition;
@@ -24,6 +25,9 @@ import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.model.block.ContextBlock;
 import com.github.seratch.jslack.api.model.block.DividerBlock;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,10 +113,26 @@ public class DeploymentListener {
             masterDeployment = deploymentResult;
         }
 
-        boolean masterNotification = environmentService.getNotificationSet(masterDeployment.getEnvironment().getId()).getNotificationRules().stream().anyMatch(r -> Objects.equals(r.getConditionKey(), "tools.redfox.bamboo.slack-notifications:slack.deploymentProgress"));
-        boolean currentNotification = environmentService.getNotificationSet(deploymentResult.getEnvironment().getId()).getNotificationRules().stream().anyMatch(r -> Objects.equals(r.getConditionKey(), "tools.redfox.bamboo.slack-notifications:slack.deploymentProgress"));
+        NotificationRule masterRule = null;
+        NotificationRule currentRule = environmentService
+                .getNotificationSet(deploymentResult.getEnvironment().getId())
+                .getNotificationRules()
+                .stream()
+                .filter(r -> r.getConditionKey().equals("tools.redfox.bamboo.slack-notifications:slack.deploymentProgress"))
+                .findFirst()
+                .orElse(null);
 
-        if (!(masterNotification || currentNotification)) {
+        if (currentRule == null && deploymentResult.getEnvironment().getId() != masterDeployment.getEnvironment().getId()) {
+            masterRule = environmentService
+                    .getNotificationSet(masterDeployment.getEnvironment().getId())
+                    .getNotificationRules()
+                    .stream()
+                    .filter(r -> r.getConditionKey().equals("tools.redfox.bamboo.slack-notifications:slack.deploymentProgress"))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        if (masterRule == null && currentRule == null) {
             return;
         }
 
@@ -148,6 +168,12 @@ public class DeploymentListener {
         );
 
         String textVersion = "";
+        Gson gson = new Gson();
+        Map<String, String> settings = gson.fromJson(
+                ObjectUtils.firstNonNull(currentRule, masterRule).getRecipient(),
+                new TypeToken<Map<String, String>>() {
+                }.getType()
+        );
 
         ao.executeInTransaction(
                 new TransactionCallback<Object>() {
@@ -168,7 +194,14 @@ public class DeploymentListener {
                         }
 
                         try {
-                            notification.setMessageTs(slack.send("general", blocks, textVersion, notification.getMessageTs()));
+                            notification.setMessageTs(
+                                    slack.send(
+                                            settings.getOrDefault("notificationSlackChannel", "general"),
+                                            blocks,
+                                            textVersion,
+                                            notification.getMessageTs()
+                                    )
+                            );
                             notification.save();
                             ao.flushAll();
                         } catch (IOException | SlackApiException e) {

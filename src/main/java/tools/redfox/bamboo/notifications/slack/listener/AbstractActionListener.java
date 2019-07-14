@@ -2,6 +2,7 @@ package tools.redfox.bamboo.notifications.slack.listener;
 
 import com.atlassian.bamboo.chains.ChainResultsSummary;
 import com.atlassian.bamboo.chains.ChainStageResult;
+import com.atlassian.bamboo.notification.NotificationRule;
 import com.atlassian.bamboo.project.Project;
 import com.atlassian.bamboo.resultsummary.BuildResultsSummary;
 import com.atlassian.bamboo.resultsummary.ResultsSummaryManager;
@@ -11,7 +12,10 @@ import com.atlassian.bamboo.variable.VariableDefinitionContext;
 import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.model.block.DividerBlock;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.jetbrains.annotations.NotNull;
+import tools.redfox.bamboo.notifications.slack.recipient.SlackRecipient;
 import tools.redfox.bamboo.notifications.slack.services.CommitDetailsProvider;
 import tools.redfox.bamboo.notifications.slack.services.JiraIssueDetailsProvider;
 import tools.redfox.bamboo.notifications.slack.slack.SlackService;
@@ -21,10 +25,7 @@ import tools.redfox.bamboo.notifications.slack.utils.UrlProvider;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 abstract public class AbstractActionListener {
     private ResultsSummaryManager resultsSummaryManager;
@@ -45,7 +46,16 @@ abstract public class AbstractActionListener {
         List<LayoutBlock> blocks = new LinkedList<>();
         ChainResultsSummary chainResultSummary = ((ChainResultsSummary) resultsSummaryManager.getResultsSummary(buildContext.getPlanResultKey()));
 
-        if (!chainResultSummary.getImmutablePlan().getNotificationSet().getNotificationRules().stream().anyMatch(r -> Objects.equals(r.getConditionKey(), "tools.redfox.bamboo.slack-notifications:slack.buildProgress"))) {
+        NotificationRule notificationRule = chainResultSummary
+                .getImmutablePlan()
+                .getNotificationSet()
+                .getNotificationRules()
+                .stream()
+                .filter(r -> r.getConditionKey().equals("tools.redfox.bamboo.slack-notifications:slack.buildProgress"))
+                .findFirst()
+                .orElse(null);
+
+        if (notificationRule == null) {
             return;
         }
 
@@ -66,11 +76,14 @@ abstract public class AbstractActionListener {
         jiraIssueDetailsProvider.attach(blocks, resultsSummary);
 
         VariableContext variables = buildContext.getVariableContext();
+        Gson gson = new Gson();
+        Map<String, String> settings = gson.fromJson(notificationRule.getRecipient(), new TypeToken<Map<String, String>>(){}.getType());
+
         try {
             VariableDefinitionContext ts = variables.getResultVariables().get("custom.bamboo.slack.build.message");
             variables.addResultVariable(
                     "custom.bamboo.slack.build.message",
-                    slack.send("general", blocks, textVersion, ts == null ? null : ts.getValue())
+                    slack.send(settings.getOrDefault("notificationSlackChannel", "general"), blocks, textVersion, ts == null ? null : ts.getValue())
             );
         } catch (IOException | SlackApiException e) {
             e.printStackTrace();
