@@ -10,5 +10,12 @@ Get instant updates about your build and deployment process.
 - xUnit test reports 
 - Commit details
 - Advance Jira issues integration via API (unfortunately OAuth linked apps are only partially supported)
+- Multi environment deployments
 
 ## How it looks like
+
+### Build
+![Screenshot](https://github.com/redfox-tools/bamboo-slack-notifications/raw/master/src/main/resources/images/preview/build_preview.gif)
+
+### Deployment
+![Screenshot](https://github.com/redfox-tools/bamboo-slack-notifications/raw/master/src/main/resources/images/preview/deployment_preview.gif)
