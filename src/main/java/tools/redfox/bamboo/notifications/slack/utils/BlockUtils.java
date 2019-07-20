@@ -1,5 +1,6 @@
 package tools.redfox.bamboo.notifications.slack.utils;
 
+import com.atlassian.bamboo.jira.jiraissues.JiraIssueDetails;
 import com.atlassian.bamboo.jira.jiraissues.LinkedJiraIssue;
 import com.atlassian.plugin.spring.scanner.annotation.component.BambooComponent;
 import com.github.seratch.jslack.api.model.block.ContextBlock;
@@ -57,6 +58,20 @@ public class BlockUtils {
             );
         }
         return markdownLink(urlProvider.jiraIssue(issue.getIssueKey()), issue.getIssueKey(), comment);
+    }
+
+    public MarkdownTextObject markdownLink(JiraIssueDetails issue) {
+        String comment = MessageFormat.format(
+                "{0} - {1}",
+                issue.getType().getTypeDescription(),
+                issue.getSummary()
+        );
+
+        return markdownLink(urlProvider.jiraIssue(issue.getIssueKey()), issue.getIssueKey(), comment);
+    }
+
+    public MarkdownTextObject markdownLink(Object o) {
+        return o instanceof JiraIssueDetails ? markdownLink((JiraIssueDetails)o) : markdownLink((LinkedJiraIssue)o);
     }
 
     public SectionBlock header(String headline) {
