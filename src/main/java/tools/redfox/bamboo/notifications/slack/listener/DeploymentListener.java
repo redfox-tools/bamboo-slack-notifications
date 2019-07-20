@@ -31,6 +31,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import tools.redfox.bamboo.notifications.slack.notification.DeploymentProgressNotificationType;
 import tools.redfox.bamboo.notifications.slack.persistence.model.SlackNotification;
 import tools.redfox.bamboo.notifications.slack.slack.SlackService;
 import tools.redfox.bamboo.notifications.slack.utils.BlockUtils;
@@ -118,7 +119,7 @@ public class DeploymentListener {
                 .getNotificationSet(deploymentResult.getEnvironment().getId())
                 .getNotificationRules()
                 .stream()
-                .filter(r -> r.getConditionKey().equals("tools.redfox.bamboo.slack-notifications:slack.deploymentProgress"))
+                .filter(r -> r.getConditionKey().equals(DeploymentProgressNotificationType.KEY))
                 .findFirst()
                 .orElse(null);
 
@@ -127,7 +128,7 @@ public class DeploymentListener {
                     .getNotificationSet(masterDeployment.getEnvironment().getId())
                     .getNotificationRules()
                     .stream()
-                    .filter(r -> r.getConditionKey().equals("tools.redfox.bamboo.slack-notifications:slack.deploymentProgress"))
+                    .filter(r -> r.getConditionKey().equals(DeploymentProgressNotificationType.KEY))
                     .findFirst()
                     .orElse(null);
         }

@@ -15,6 +15,7 @@ import com.github.seratch.jslack.api.model.block.LayoutBlock;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.jetbrains.annotations.NotNull;
+import tools.redfox.bamboo.notifications.slack.notification.BuildProgressNotificationType;
 import tools.redfox.bamboo.notifications.slack.recipient.SlackRecipient;
 import tools.redfox.bamboo.notifications.slack.services.CommitDetailsProvider;
 import tools.redfox.bamboo.notifications.slack.services.JiraIssueDetailsProvider;
@@ -51,7 +52,7 @@ abstract public class AbstractActionListener {
                 .getNotificationSet()
                 .getNotificationRules()
                 .stream()
-                .filter(r -> r.getConditionKey().equals("tools.redfox.bamboo.slack-notifications:slack.buildProgress"))
+                .filter(r -> r.getConditionKey().equals(BuildProgressNotificationType.KEY))
                 .findFirst()
                 .orElse(null);
 

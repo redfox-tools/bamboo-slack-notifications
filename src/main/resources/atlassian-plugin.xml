@@ -3,8 +3,8 @@
         <description>${project.description}</description>
         <version>${project.version}</version>
         <vendor name="${project.organization.name}" url="${project.organization.url}" />
-        <param name="plugin-icon">images/pluginIcon.png</param>
-        <param name="plugin-logo">images/pluginLogo.png</param>
+        <param name="plugin-icon">images/slack-notifications/pluginIcon.png</param>
+        <param name="plugin-logo">images/slack-notifications/pluginLogo.png</param>
     </plugin-info>
 
     <!-- add our i18n resource -->
@@ -16,51 +16,51 @@
         <resource type="freemarker" name="edit" location="templates/channelEdit.ftl"/>
     </notificationRecipient>
 
-    <bambooEventListener key="slackDeploymentEventListener" class="tools.redfox.bamboo.notifications.slack.listener.DeploymentListener"/>
-    <bambooEventListener key="pluginEventListener" class="tools.redfox.bamboo.notifications.slack.listener.PluginEventListener"/>
+    <bambooEventListener key="tools.redfox.slack.listeners.deployment" class="tools.redfox.bamboo.notifications.slack.listener.DeploymentListener"/>
+    <bambooEventListener key="tools.redfox.slack.listeners.plugin" class="tools.redfox.bamboo.notifications.slack.listener.PluginEventListener"/>
 
-    <preChainAction key="slackPreBuildAction" class="tools.redfox.bamboo.notifications.slack.listener.PreBuildAction" />
-    <postChainAction key="slackPostBuildAction" class="tools.redfox.bamboo.notifications.slack.listener.PostBuildAction" />
-    <postJobAction key="slackPostJobAction" class="tools.redfox.bamboo.notifications.slack.listener.PostJobAction" />
+    <preChainAction key="tools.redfox.slack.listeners.build.pre" class="tools.redfox.bamboo.notifications.slack.listener.PreBuildAction" />
+    <postChainAction key="tools.redfox.slack.listeners.build.post" class="tools.redfox.bamboo.notifications.slack.listener.PostBuildAction" />
+    <postJobAction key="tools.redfox.slack.listeners.job.post" class="tools.redfox.bamboo.notifications.slack.listener.PostJobAction" />
 
-    <web-item key="slackLink" name="Slack admin" section="system.admin/plugins" weight="999">
+    <web-item key="tools.redfox.slack.link.admin" name="Slack admin" section="system.admin/plugins" weight="999">
         <label key="tools.redfox.bamboo.notifications.slack.configuration.menu">Slack integration</label>
         <link linkId="slack-settings-link">/admin/slack/settings.action</link>
     </web-item>
 
-    <xwork key="slackSettings" name="Configure slack integration" >
+    <xwork key="tools.redfox.slack.worl.admin" name="Configure slack integration" >
         <package extends="admin" name="settings" namespace="/admin/slack">
             <action class="tools.redfox.bamboo.notifications.slack.action.SlackConfigurationAction" name="settings">
                 <interceptor-ref name="defaultStack"/>
-                <result name="input" type="freemarker">/templates/settings.ftl</result>
-                <result name="success" type="freemarker">/templates/settings.ftl</result>
+                <result name="input" type="freemarker">/templates/tools/redfox/slack-notifications/settings.ftl</result>
+                <result name="success" type="freemarker">/templates/tools/redfox/slack-notifications/settings.ftl</result>
                 <result name="reload" type="redirect">/admin/slack/settings.action?saved=true</result>
             </action>
         </package>
     </xwork>
 
-    <ao key="ao-module">
+    <ao key="tools.redfox.slack.listeners.ao.notifications">
         <description>The ActiveObject entities for this plugin.</description>
         <entity>tools.redfox.bamboo.notifications.slack.persistence.model.SlackNotification</entity>
     </ao>
 
     <web-resource key="howto" name="How-to images" >
-        <resource type="download" name="01_create_app.png" location="images/howto/01_create_app.png" />
-        <resource type="download" name="02_configure_bot.png" location="images/howto/02_configure_bot.png" />
-        <resource type="download" name="03_add_bot_user.png" location="images/howto/03_add_bot_user.png" />
-        <resource type="download" name="04_configure_bot_user.png" location="images/howto/04_configure_bot_user.png" />
-        <resource type="download" name="05_configure_permissions.png" location="images/howto/05_configure_permissions.png" />
-        <resource type="download" name="06_install_app.png" location="images/howto/06_install_app.png" />
-        <resource type="download" name="07_accept.png" location="images/howto/07_accept.png" />
-        <resource type="download" name="08_token.png" location="images/howto/08_token.png" />
+        <resource type="download" name="01_create_app.png" location="images/slack-notifications/howto/01_create_app.png" />
+        <resource type="download" name="02_configure_bot.png" location="images/slack-notifications/howto/02_configure_bot.png" />
+        <resource type="download" name="03_add_bot_user.png" location="images/slack-notifications/howto/03_add_bot_user.png" />
+        <resource type="download" name="04_configure_bot_user.png" location="images/slack-notifications/howto/04_configure_bot_user.png" />
+        <resource type="download" name="05_configure_permissions.png" location="images/slack-notifications/howto/05_configure_permissions.png" />
+        <resource type="download" name="06_install_app.png" location="images/slack-notifications/howto/06_install_app.png" />
+        <resource type="download" name="07_accept.png" location="images/slack-notifications/howto/07_accept.png" />
+        <resource type="download" name="08_token.png" location="images/slack-notifications/howto/08_token.png" />
     </web-resource>
 
-    <notificationType key="slack.buildProgress" name="Build progress" class="tools.redfox.bamboo.notifications.slack.notification.BuildProgressNotificationType" weight="10">
+    <notificationType key="tools.redfox.slack.notification.build" name="Build progress" class="tools.redfox.bamboo.notifications.slack.notification.BuildProgressNotificationType" weight="10">
         <description>Report build progress</description>
         <scope>chain</scope>
     </notificationType>
 
-    <notificationType key="slack.deploymentProgress" name="Deployment progress" class="tools.redfox.bamboo.notifications.slack.notification.DeploymentProgressNotificationType" weight="10">
+    <notificationType key="tools.redfox.slack.notification.deployment" name="Deployment progress" class="tools.redfox.bamboo.notifications.slack.notification.DeploymentProgressNotificationType" weight="10">
         <description>Report deployment progress</description>
         <scope>deployment</scope>
     </notificationType>

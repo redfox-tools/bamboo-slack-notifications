@@ -15,7 +15,7 @@ Get instant updates about your build and deployment process.
 ## How it looks like
 
 ### Build
-![Screenshot](https://github.com/redfox-tools/bamboo-slack-notifications/raw/master/src/main/resources/images/preview/build_preview.gif)
+![Screenshot](https://github.com/redfox-tools/bamboo-slack-notifications/raw/master/src/main/resources/images/slack-notifications/preview/build_preview.gif)
 
 ### Deployment
-![Screenshot](https://github.com/redfox-tools/bamboo-slack-notifications/raw/master/src/main/resources/images/preview/deployment_preview.gif)
+![Screenshot](https://github.com/redfox-tools/bamboo-slack-notifications/raw/master/src/main/resources/images/slack-notifications/preview/deployment_preview.gif)
