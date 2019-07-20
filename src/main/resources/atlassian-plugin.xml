@@ -23,9 +23,9 @@
     <postChainAction key="tools.redfox.slack.listeners.build.post" class="tools.redfox.bamboo.notifications.slack.listener.PostBuildAction" />
     <postJobAction key="tools.redfox.slack.listeners.job.post" class="tools.redfox.bamboo.notifications.slack.listener.PostJobAction" />
 
-    <web-item key="tools.redfox.slack.link.admin" name="Slack admin" section="system.admin/plugins" weight="999">
+    <web-item key="tools.redfox.slack.item.admin" name="Slack admin" section="system.admin/plugins" weight="999">
         <label key="tools.redfox.bamboo.notifications.slack.configuration.menu">Slack integration</label>
-        <link linkId="slack-settings-link">/admin/slack/settings.action</link>
+        <link linkId="tools.redfox.slack.link.admin">/admin/slack/settings.action</link>
     </web-item>
 
     <xwork key="tools.redfox.slack.worl.admin" name="Configure slack integration" >
