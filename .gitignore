@@ -1,3 +1,4 @@
 /target
 /.idea
 /bamboo-slack-notifications.iml
+.DS_Store
