@@ -13,7 +13,7 @@
     <notificationRecipient key="recipient.slack.channel" name="Slack Channel"
                            class="tools.redfox.bamboo.notifications.slack.recipient.SlackRecipient" weight="10">
         <description>Slack channel</description>
-        <resource type="freemarker" name="edit" location="templates/channelEdit.ftl"/>
+        <resource type="freemarker" name="edit" location="/templates/tools/redfox/slack-notifications/channelEdit.ftl"/>
     </notificationRecipient>
 
     <bambooEventListener key="tools.redfox.slack.listeners.deployment" class="tools.redfox.bamboo.notifications.slack.listener.DeploymentListener"/>
