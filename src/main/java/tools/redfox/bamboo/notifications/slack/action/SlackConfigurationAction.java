@@ -13,10 +13,14 @@ import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.xsrf.XsrfTokenAccessor;
+import com.github.seratch.jslack.Slack;
+import com.github.seratch.jslack.api.methods.SlackApiException;
+import com.github.seratch.jslack.api.methods.response.channels.ChannelsListResponse;
 import org.apache.struts2.ServletActionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +30,6 @@ public class SlackConfigurationAction extends BambooActionSupport implements Glo
     public static final String SLACK_BOT_JIRA_BAMBOO_USERNAME = "slackJiraBambooUsername";
     public static final String PLUGIN_STORAGE_KEY = "tools.redfox.bamboo.notifications.slack.";
 
-    private final BambooPermissionManager bambooPermissionManager;
-    private final DeploymentProjectService deploymentProjectService;
-    private final AdministrationConfigurationAccessor administrationConfigurationAccessor;
-    private final PlanManager planManager;
     private final XsrfTokenAccessor xsrfTokenAccessor;
     private final PluginSettings pluginSettings;
     private final BambooUserManager bambooUserManager;
@@ -39,7 +39,6 @@ public class SlackConfigurationAction extends BambooActionSupport implements Glo
     public SlackConfigurationAction(@ComponentImport BambooPermissionManager bambooPermissionManager,
                                     @ComponentImport DeploymentProjectService deploymentProjectService,
                                     @ComponentImport AdministrationConfigurationAccessor administrationConfigurationAccessor,
-                                    @ComponentImport PlanManager planManager,
                                     @ComponentImport XsrfTokenAccessor xsrfTokenAccessor,
                                     @ComponentImport PluginSettingsFactory pluginSettingsFactory,
                                     @ComponentImport BambooUserManager bambooUserManager,
@@ -47,7 +46,6 @@ public class SlackConfigurationAction extends BambooActionSupport implements Glo
         this.bambooPermissionManager = bambooPermissionManager;
         this.deploymentProjectService = deploymentProjectService;
         this.administrationConfigurationAccessor = administrationConfigurationAccessor;
-        this.planManager = planManager;
         this.xsrfTokenAccessor = xsrfTokenAccessor;
         this.pluginSettings = pluginSettingsFactory.createGlobalSettings();
         this.bambooUserManager = bambooUserManager;
@@ -63,7 +61,22 @@ public class SlackConfigurationAction extends BambooActionSupport implements Glo
         HttpServletRequest request = ServletActionContext.getRequest();
         if (request.getMethod().equals("POST")) {
             validateField(request, SLACK_BOT_OAUTH_TOKEN, getText("tools.redfox.bamboo.notifications.slack.slack.error.oauth"));
-            validateField(request, SLACK_BOT_JIRA_BAMBOO_USERNAME, getText("tools.redfox.bamboo.notifications.slack.slack.error.oauth"));
+
+            String token = request.getParameter(SLACK_BOT_OAUTH_TOKEN);
+
+            Slack slack = Slack.getInstance();
+            ChannelsListResponse channelsResponse = null;
+            try {
+                channelsResponse = slack.methods().channelsList(req -> req.token(token));
+                if (!channelsResponse.isOk()) {
+                    addFieldError(SLACK_BOT_OAUTH_TOKEN, "Unable to validate slack token");
+                }
+            } catch (SlackApiException | IOException e) {
+            }
+
+            if (applicationLinkService.getPrimaryApplicationLink(JiraApplicationType.class) != null) {
+                validateField(request, SLACK_BOT_JIRA_BAMBOO_USERNAME, getText("tools.redfox.bamboo.notifications.slack.slack.error.oauth"));
+            }
         }
 
         Map<String, Object> context = ServletActionContext.getValueStack(request).getContext();
