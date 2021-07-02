@@ -8,21 +8,23 @@ import com.github.seratch.jslack.api.methods.RequestConfigurator;
 import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.methods.request.chat.ChatPostMessageRequest;
 import com.github.seratch.jslack.api.methods.request.chat.ChatUpdateRequest;
-import com.github.seratch.jslack.api.methods.response.channels.ChannelsListResponse;
 import com.github.seratch.jslack.api.methods.response.chat.ChatPostMessageResponse;
 import com.github.seratch.jslack.api.methods.response.chat.ChatUpdateResponse;
-import com.github.seratch.jslack.api.model.Channel;
+import com.github.seratch.jslack.api.methods.response.conversations.ConversationsListResponse;
+import com.github.seratch.jslack.api.model.Conversation;
+import com.github.seratch.jslack.api.model.ConversationType;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
 import org.springframework.beans.factory.annotation.Autowired;
 import tools.redfox.bamboo.notifications.slack.action.SlackConfigurationAction;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @BambooComponent
 public class SlackService {
     private static final Slack slack = Slack.getInstance();
-    private List<Channel> channels;
+    private List<Conversation> channels;
     private PluginSettingsFactory pluginSettingsFactory;
 
     @Autowired
@@ -30,16 +32,21 @@ public class SlackService {
         this.pluginSettingsFactory = pluginSettingsFactory;
     }
 
-    public List<Channel> getChannels() throws IOException, SlackApiException {
+    public List<Conversation> getChannels() throws IOException, SlackApiException {
         if (channels == null) {
-            ChannelsListResponse channelsResponse = slack.methods().channelsList(req -> req.token(getToken()));
-            assert channelsResponse.isOk();
-            channels = channelsResponse.getChannels();
+            ConversationsListResponse conversationsResponse = slack.methods().conversationsList(
+                    req -> req
+                            .token(getToken())
+                            .types(Arrays.asList(ConversationType.PUBLIC_CHANNEL, ConversationType.PRIVATE_CHANNEL))
+
+            );
+            assert conversationsResponse.isOk();
+            channels = conversationsResponse.getChannels();
         }
         return channels;
     }
 
-    public Channel getChannel(String name) {
+    public Conversation getChannel(String name) {
         try {
             return getChannels()
                     .stream()
