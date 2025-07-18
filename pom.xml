@@ -34,7 +34,7 @@
     </repositories>
 
     <properties>
-        <bamboo.version>6.10.4</bamboo.version>
+        <bamboo.version>10.2.0</bamboo.version>
         <bamboo.data.version>6.10.4</bamboo.data.version>
         <amps.version>8.0.2</amps.version>
         <plugin.testrunner.version>2.0.1</plugin.testrunner.version>
@@ -120,7 +120,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.7</version>
+            <version>3.18.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
